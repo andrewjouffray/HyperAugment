@@ -113,7 +113,7 @@ class Ooi{
 
 			//sets x1 y1
 			xAbsolutePos = xOffSet;
-			yAbsolutePos = yOffSet;l
+			yAbsolutePos = yOffSet;
 
 			//sets x2 y2
         		ooiWidth += AbsolutePos;
