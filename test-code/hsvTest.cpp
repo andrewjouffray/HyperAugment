@@ -11,11 +11,13 @@ using namespace std;
 using namespace cv;
 
 
+Mat img;
+
 template<typename T>
 T random(T from, T to) {
         random_device                    rand_dev;
         mt19937                          generator(rand_dev());
-        uniform_real_distribution<T>    distr(from, to);
+        uniform_int_distribution<T>    distr(from, to);
 	return distr(generator);
 }
 
@@ -28,49 +30,50 @@ int main() {
 	// rows = height and cols = width
 
 
-	float randVal1 = random<float>(0.20f, 0.45f);
-	float randVal2 = random<float>(0.70f, 0.90f);
-	float randVal3 = random<float>(0.10f, 0.35f);
-	float inverted = random<float>(0.0f, 1.0f);
+	// HSV stands for Hue Saturation Value(Brightness)
+   	cvtColor(src,img,CV_RGB2HSV);
 
 
-	// print random value for troubleshooting
-	//cout << "value1: " + to_string(randVal1) << endl;	
-	//cout << "value2: " + to_string(randVal2) << endl;
-	//cout << "value3: " + to_string(randVal3) << endl;
+	int defaultVal = 255;
 
-	// image size for troubleshooting
-	//cout << "col: " + to_string(src.cols) << endl;
-        //cout << "rows: " + to_string(src.rows) << endl;
+	// less than 255 will reduce the current hue value
+	// greater than 255 will increase the hue value
+	
+	int hueVal = random<int>(155, 355);
+    	int hue = hueVal  - defaultVal;
 
-	// points2f means a 2d set of floating point single precision vatiables
-	// source
-    	Point2f srcTri[3];
 
-	if (inverted >= 0.5f){
-    		srcTri[0] = Point2f( 0.f, 0.f ); // top left
-    		srcTri[1] = Point2f( src.cols - 1.f, 0.f ); // bottom left
-   		srcTri[2] = Point2f( 0.f, src.rows - 1.f ); // top right
-	}else{
-        	srcTri[0] = Point2f( src.cols - 1.f, src.rows - 1.f ); // bottom right
-        	srcTri[1] = Point2f( 0.f, src.rows - 1.f ); // top right
-        	srcTri[2] = Point2f( src.cols - 1.f, 0.f ); // bottom left
-	}
+	int satVal = random<int>(155, 355);
+    	int saturation = satVal  - defaultVal;
 
-	//destination
-    	Point2f dstTri[3];
-    	dstTri[0] = Point2f( 0.f, src.rows*randVal3 );
-    	dstTri[1] = Point2f( src.cols*0.85f, src.rows*randVal1 );
-    	dstTri[2] = Point2f( src.cols*0.15f, src.rows*randVal2 );
+	// value is brightness, we modify this on the whole canvas not on one object
+    	int value = 255 - defaultVal;
+ 
+    	for(int y=0; y<img.cols; y++)
+    	{
+        	for(int x=0; x<img.rows; x++)
+        	{
+            	int cur1 = img.at<Vec3b>(Point(y,x))[0];
+            	int cur2 = img.at<Vec3b>(Point(y,x))[1];
+            	int cur3 = img.at<Vec3b>(Point(y,x))[2];
+            	cur1 += hue;
+            	cur2 += saturation;
+            	cur3 += value;
+ 
+            	if(cur1 < 0) cur1= 0; else if(cur1 > 255) cur1 = 255;
+            	if(cur2 < 0) cur2= 0; else if(cur2 > 255) cur2 = 255;
+            	if(cur3 < 0) cur3= 0; else if(cur3 > 255) cur3 = 255;
+ 
+            	img.at<Vec3b>(Point(y,x))[0] = cur1;
+            	img.at<Vec3b>(Point(y,x))[1] = cur2;
+            	img.at<Vec3b>(Point(y,x))[2] = cur3;
+        	}
+    	}
+ 
+    	cvtColor(img,src,CV_HSV2RGB);
+    	imshow( "image", src );
 
-	// create a wrap matrix
-    	Mat warp_mat = getAffineTransform( srcTri, dstTri );
-    	Mat warp_dst = Mat::zeros( src.rows, src.cols, src.type() );
-    	warpAffine( src, warp_dst, warp_mat, warp_dst.size() );
-
-    	imshow( "Warp", warp_dst );
-    	waitKey();
+	waitKey(0);
     	return 0;
-
 
 }
