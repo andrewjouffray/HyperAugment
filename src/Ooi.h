@@ -28,7 +28,7 @@ public
 	bool debug = false;
 	cv::Mat image;
 
-	Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int[2] probabilities);
+	Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int[2] probabilities, bool debug);
 
 	void rotate(int angle);
 
