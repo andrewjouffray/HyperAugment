@@ -1,2 +1,0 @@
-/usr/bin/ar qc libother.a CMakeFiles/other.dir/randomFunc.cpp.o CMakeFiles/other.dir/PassFunction.cpp.o
-/usr/bin/ranlib libother.a
