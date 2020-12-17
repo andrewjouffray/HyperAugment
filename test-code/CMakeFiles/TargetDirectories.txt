@@ -1,0 +1,4 @@
+/run/media/andrew/0493db9e-eabd-406b-bd32-c5d3c85ebb38/Projects/HyperAugment/test-code/CMakeFiles/rebuild_cache.dir
+/run/media/andrew/0493db9e-eabd-406b-bd32-c5d3c85ebb38/Projects/HyperAugment/test-code/CMakeFiles/edit_cache.dir
+/run/media/andrew/0493db9e-eabd-406b-bd32-c5d3c85ebb38/Projects/HyperAugment/test-code/CMakeFiles/maintest.dir
+/run/media/andrew/0493db9e-eabd-406b-bd32-c5d3c85ebb38/Projects/HyperAugment/test-code/CMakeFiles/other.dir

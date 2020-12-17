@@ -8,6 +8,10 @@
 
 using namespace std;
 
+// defines the types of the random functions that will be passed in
+typedef function<float(float,float)> randFloatType;
+typedef function<int(int,int)> randIntType;
+
 class Canvas{
 
 	public:
@@ -23,9 +27,18 @@ class Canvas{
 		int numObjects;
 		int columnWidth;
 		string pathToCanvas;
+		randIntType randInt;
+		randFloatType randFloat;
 
-		// constructor
-		Canvas(cv::Mat ooiArg, string canvasPathArg, cv::Mat backgroundArg, int maxOoi){
+		// constructor, references to the random functions are passed in
+		Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, const randFloatType & randF, const randIntType & randI){
+
+			// check this out when it comes to passing a reference to a function.
+			// https://stackoverflow.com/questions/41959721/passing-function-to-class-in-c
+			// https://stackoverflow.com/questions/7142883/chow-to-pass-reference-to-function-into-another-function
+			// set the references to the rand function
+			randInt = randI;
+			randFloat = randF;
 
 			ooi = ooiArg;
 			pathToCanvas = canvasPathArg;
@@ -33,11 +46,10 @@ class Canvas{
 			maxObjects = maxOoi;
 
 			// define the size random between 500 and 720 pixels
-			height = rand() % 220 + 500;
+			height = randInt(500, 720);
 
 			// gets a aspect random ratio from the ratio list
-			int randRatio = rand() % 5 + 1;
-			randRatio --;
+			int randRatio = randInt(0, 4);
 			float ratio = aspectRatios[randRatio];	
 			float fWidth = height * ratio;
 		      	width = (int)fWidth; // gets a with value as integer

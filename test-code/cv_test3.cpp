@@ -53,7 +53,7 @@ uint64_t timeSinceEpochMillisec(){
 
 int main(int argc, const char* argv[]){
 
-        string path = "/mnt/0493db9e-eabd-406b-bd32-c5d3c85ebb38/Projects/Video/Weeds2/nenuphare/data1595119927.9510028output.avi";
+        string path = "/run/media/andrew/0493db9e-eabd-406b-bd32-c5d3c85ebb38/Projects/Video/Weeds2/nenuphare/data1595119927.9510028output.avi";
 	string save = "/home/andrew/Pictures/";
 	
 	int64_t  start = timeSinceEpochMillisec();
