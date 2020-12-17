@@ -7,7 +7,7 @@ Ooi stands of Objects of interest, those are the objects that are added to the b
 
 The canvas creates between 1 - 10 ooi and needs to place them on the image without overlapping between ooi. So
 the algorithm defines a column on the canvas for each of those objects to be passed in. the left boundary of these
-columns are the xAbsolutePos. The vertical boundary is the top of the image therefor yAbsolutePos always starts at 0
+columns are the Ooi::xAbsolutePos. The vertical boundary is the top of the image therefor Ooi::yAbsolutePos always starts at 0
 
 setp1: rotate
 step2: scale
@@ -23,15 +23,15 @@ note: everytime I mention 'object' in the comments, I'm referring to the object 
 
 
 // constructor
-Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int[2] probabilities){
+Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolutePos, int[2] probabilities){
 		
-	image = objectOfInterest;
+	Ooi::image = objectOfInterest;
 
 	//define one random value that will be moded, to define probability of transformation
-	randomValue = random<int>(0, 1000);
+	Ooi::randomValue = randomInt(0, 1000); // this is a const?
 
 	//Rotate the object to a random angle between 0 and 360
-        int angle = randomValue % 360;
+        int angle = Ooi::randomValue % 360;
         rotate(angle);
 
 	// defines the probability that the image will have an affine transform and/or a saturation change
@@ -47,13 +47,13 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	}
 
 	// get the height and width after possible transformations
-	ooiWidth = image.size.width();
-        ooiHeight = image.size.height();
+	Ooi::ooiWidth = image.size.width();
+	Ooi::ooiHeight = image.size.height();
 
 
 	// determine the maximum scale to shrink or expand the image so that it still fits in the canvas
-	float maxScaleHeight = (colHeight / ooiHeight) - 0.01;
-	float maxScaleWidth = (colWidth / ooiWidth) - 0.01;
+	float maxScaleHeight = (colHeight / Ooi::ooiHeight) - 0.01;
+	float maxScaleWidth = (colWidth / Ooi::ooiWidth) - 0.01;
 	if(maxScaleHeight > maxScaleWidth){
 		maxScale = maxScaleWidth;
 	}else{
@@ -69,7 +69,7 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	if (debug){
 		cout << "> ===== ooi width and height information ===== " << endl
 		cout << "> col height: " + to_string(colHeight) + "| col width: " + to_string(colWidth) << endl;
-		cout << "> ooi height: " + to_string(ooiHeight) + "| ooi width: " + to_string(ooiWidth) << endl;
+		cout << "> ooi height: " + to_string(Ooi::ooiHeight) + "| ooi width: " + to_string(Ooi::ooiWidth) << endl;
 		cout << "> max scale height: " + to_string(maxScaleHeigth) + "| max scale width: " + to_string(maxScaleWidth) << endl;
 		cout << "> max scale: " + to_string(maxScale) + "| min scale: " + to_string(minScale) << endl;
 	}
@@ -80,28 +80,28 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	try{
 		int maxXOffset = colWidth - width;
 		int maxYOffset = colHeight - height;
-		xOffSet = randomInt<int>(0, maxXOffSet);
-            	yOffSet = randomInt<int>(0, maxYOffSet);
+		Ooi::xOffset = randomInt<int>(0, maxXOffSet);
+            	Ooi::yOffset = randomInt<int>(0, maxYOffSet);
 			
 	}catch(...){
 		cout << "> error while computing offsets" << endl;
-		xOffSet = 1;
-		yOffSet = 1;
+		Ooi::xOffset = 1;
+		Ooi::yOffset = 1;
 	}
 
 	//sets x1 y1
-	xAbsolutePos = xOffSet;
-	yAbsolutePos = yOffSet;
+	Ooi::xAbsolutePos = Ooi::xOffset;
+	Ooi::yAbsolutePos = Ooi::yOffset;
 
 	//sets x2 y2
-        ooiWidth += AbsolutePos;
-        ooiHeight += yAbsolutePos;	
+        Ooi::ooiWidth += AbsolutePos;
+        Ooi::ooiHeight += Ooi::yAbsolutePos;	
 		
 }
 
 
 // code from user Lars Schillingmann https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
-Ooi::void rotate(int angle){
+void Ooi::rotate(int angle){
 			
 	cv::Mat src = image;
 	// get rotation matrix for rotating the image around its center in pixel coordinates
@@ -120,16 +120,16 @@ Ooi::void rotate(int angle){
 		
 }
 
-Ooi::void scaleImage(float scale){
+void Ooi::scaleImage(float scale){
 		
 	// updates the new height and width and scales the object.	
-	ooiWidth = ooiWidth * scale;
-	ooiHeight = ooiHeight * scale;
-	cv::Size size(ooiWidth, ooiHeight);
+	Ooi::ooiWidth = Ooi::ooiWidth * scale;
+	Ooi::ooiHeight = Ooi::ooiHeight * scale;
+	cv::Size size(Ooi::ooiWidth, Ooi::ooiHeight);
 	cv::resize(image, image, size);
 }
 
-Ooi::void affineTransform(){
+void Ooi::affineTransform(){
 
 
         // rows = height and cols = width
@@ -179,7 +179,7 @@ Ooi::void affineTransform(){
 }
 		
 // converts the image into HSV, and randomely modifies the hsv values
-Ooi::void changeSaturation(){	
+void Ooi::changeSaturation(){	
 
 
         // HSV stands for Hue Saturation Value(Brightness)
@@ -234,14 +234,14 @@ Ooi::void changeSaturation(){
 		
 }
 
-Ooi::int[4] getPosition(){
+int[4] Ooi::getPosition(){
 		
-	int[4] positions = {xAbsolutePos, yAbsolutePos, ooiWidth, ooiHeight};
+	int[4] positions = {Ooi::xAbsolutePos, Ooi::yAbsolutePos, Ooi::ooiWidth, Ooi::ooiHeight};
 	return positions;
 		
 }
 
-Ooi::cv::Mat getObject(){
+cv::Mat Ooi::getObject(){
 		
 	return image;
 		
