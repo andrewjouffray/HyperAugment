@@ -27,7 +27,7 @@ class Canvas{
 		vector<Ooi> objects; // I might need to define the type Ooi?
 		bool debug = false;
 
-		// constructor, references to the random functions are passed in
+		// constructor, params need to be added I think.
 		Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int[2] modProbability, bool debug){
 
 			// - check this out when it comes to passing a reference to a function.
@@ -41,7 +41,7 @@ class Canvas{
 			modProb = modProbability;
 
 			// define the size random between 500 and 720 pixels
-			height = randomInt(500, 720);
+			height = randomInt(500, 860);
 
 			// gets a aspect random ratio from the ratio list
 			int randRatio = randomInt(0, 4);
@@ -84,21 +84,35 @@ class Canvas{
 
 				// overlay the object onto the canvas 
 				try{
-					// stuff
+					cv::Mat objectImage = objectOfInterest.getObject();
+					canvas.copyTo(objectImage(cv::Rect(x1,y1, x2, y2)));
 				
 				}catch{
 
-					// if debug is on
+					// maybe add a counter for failures?
+					if(debug) {
+					
+						cout << "> (canvas) could not insert object into canvas" << endl;
+						cout << "> (canvas) x1, y1, x2, y2: "+x1+", "+y1+", "+x2+", "+y2 << endl;
+						cout << "> (canvas) canvas size, rows, cols: " +canvas.rows+", "+canvas.cols;
+					}
+					else{
+						
+						cout << "> (canvas) could not insert object into canvas";
+					}
 				
 				}	
 
 				// createMasks
+				mask = createMasks();
 
 
 				// calculateRois
+				rois = calculateRois();
 				
 				
 				// addBackground
+				canvas = addBackground();
 
 
 			
@@ -110,12 +124,33 @@ class Canvas{
 		}
 
 		void lowerRes(){
-			//TODO: write it
+
+			// reduction factor
+			float factor = 0.0;
+
+			//allows the resolution do be reduced more on larger images
+			if (height > 720){
+				factor = randomFloat(1.0, 2.0);
+			}else{
+				factor = randomFloat(1.0, 1.5);
+			}
+
+			cv::Mat lowRes;
+			cv::resize(canvas, lowRes, (width/factor, height/factor));
+			cv::resize(lowRes, canvas, (width, height));
+
 		}
 
 		void blurr(){
+
+			int kernelSize = randomInt(1, 5);
+
+			if(kernelSize % 2 == 0){
+				kernelSize = kernelSize + 1;
+			}
 		
-			//TODO:write it
+			cv::GaussianBlur(canvas, canvas, Size(kernelSize, kernelSize), 0);
+
 		}
 
 		void tint(){
@@ -123,17 +158,17 @@ class Canvas{
 			//TODO:write it
 		}
 
-		void createMasks(){
+		cv::Mat createMasks(){
 			
 			// write it
 		}
 
-		void calculateRois(){
+		vector<vector<int>> calculateRois(){
 		
 			// write it
 		}
 
-		void addBackground(){
+		cv::Mat addBackground(){
 		
 			// write it
 		}
