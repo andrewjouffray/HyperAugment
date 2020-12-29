@@ -51,7 +51,8 @@ class Canvas{
 		      	width = (int)fWidth; // gets a with value as integer
 
 			// create canvas and set it to black canvas to black
-			canvas = cv::Mat image(320, 240, CV_8UC3, cv::Scalar(0, 0, 0));
+			cv::Mat blkImage(320, 240, CV_8UC3, cv::Scalar(0, 0, 0));
+			canvas = blkImage;
 
 			//define the number of Ooi to be created for this canvas
 			numObjects = randomInt(2, maxObjects);
@@ -86,7 +87,8 @@ class Canvas{
 				// overlay the object onto the canvas 
 				try{
 					cv::Mat objectImage = objectOfInterest.getObject();
-					canvas.copyTo(objectImage(cv::Rect(x1,y1, x2, y2)));
+					cv::Mat inset(canvas, cv::Rect(x1, y1, x2, y2));
+					objectImage.copyTo(inset);
 				
 				}catch{
 
@@ -136,9 +138,14 @@ class Canvas{
 				factor = randomFloat(1.0, 1.5);
 			}
 
+			float newHeightf = height/factor;
+			float newWidthf = width/factor;
+			int newWidth = (int)newWidthf;
+			int newHeight = (int)newHeightf;
+
 			cv::Mat lowRes;
-			cv::resize(canvas, lowRes, (width/factor, height/factor));
-			cv::resize(lowRes, canvas, (width, height));
+			cv::resize(canvas, lowRes, cv::(newWidth, newHeight));
+			cv::resize(lowRes, canvas, cv::(width, height));
 
 		}
 
@@ -150,7 +157,7 @@ class Canvas{
 				kernelSize = kernelSize + 1;
 			}
 		
-			cv::GaussianBlur(canvas, canvas, Size(kernelSize, kernelSize), 0);
+			cv::GaussianBlur(canvas, canvas, cv::Size(kernelSize, kernelSize), 0);
 
 		}
 
