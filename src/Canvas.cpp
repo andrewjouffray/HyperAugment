@@ -74,7 +74,7 @@ class Canvas{
 				int absolutePos = columnWidth * i;
 
 				// create an object to put on the canvas
-		`		Ooi objectOfInterest = Ooi(ooi, columnWidth, height, absolutePos, modProb, debug);
+				Ooi objectOfInterest = Ooi(ooi, columnWidth, height, absolutePos, modProb, debug);
 				objects.push_back(objectOfInterest);
 
 				// get the position of the object in the image
@@ -107,7 +107,8 @@ class Canvas{
 				}	
 
 				// createMasks
-				mask = createMasks();
+				int testColor [3] = {210, 30, 78}; // make sure to properly implement this.
+				createMasks(testColor);
 
 
 				// calculateRois
@@ -166,9 +167,22 @@ class Canvas{
 			//TODO:write it
 		}
 
-		cv::Mat createMasks(){
-			
-			// write it
+		// each label in a dataset has a different colored mask
+		void createMasks(int mcolors [3]){
+
+			// FUTURE UPDATE: get the thresholded value once and not in each method
+
+			mask = canvas.clone()
+        		cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
+        		double thresh = 0;
+        		double maxValue = 255;
+        		// Binary Threshold
+        		cv::threshold(mask, mask, thresh, maxValue, cv::THRESH_BINARY);
+        		cv::Mat grayMask;
+        		cv::cvtColor(mask, mask, cv::COLOR_GRAY2BGR);
+        		inRange(mask, cv::Scalar(255, 255, 255), cv::Scalar(255, 255, 255), grayMask);
+        		mask.setTo(cv::Scalar(mcolors[0], mcolors[1], mcolors[2]), grayMask);
+
 		}
 
 		vector<vector<int>> calculateRois(){

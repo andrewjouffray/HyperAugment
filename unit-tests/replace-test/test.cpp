@@ -12,7 +12,12 @@ using namespace std;
 
 // this tests the radom functions, lowe res, blurr, create canvas and inserting an image onto the canvas
 
-cv::Mat getMasks(cv::Mat image, int mcolors [3]){
+cv::Mat replace(cv::Mat image, cv::Mat background){
+
+
+	// resize the background to fit the canvas
+	cv::resize(background, background, cv::Size(image.rows, image.cols));
+
 
 	cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
 	double thresh = 0;
@@ -21,8 +26,17 @@ cv::Mat getMasks(cv::Mat image, int mcolors [3]){
 	cv::threshold(image, image, thresh, maxValue, cv::THRESH_BINARY);
 	cv::Mat mask;
 	cv::cvtColor(image, image, cv::COLOR_GRAY2BGR);
-    	inRange(image, cv::Scalar(255, 255, 255), cv::Scalar(255, 255, 255), mask);
-    	image.setTo(cv::Scalar(mcolors[0], mcolors[1], mcolors[2]), mask);
+
+	for(int i=0; i<image.rows; i++){
+    		for(int j=0; j<image.cols; j++){
+
+			std::cout << image.at<uchar>(i,j) << endl;
+
+		
+		}
+	}
+
+
 	return image;
 
 }
@@ -30,6 +44,7 @@ cv::Mat getMasks(cv::Mat image, int mcolors [3]){
 int main(){
 
 	cv::Mat objectImage = cv::imread("../selfie.png");
+	cv::Mat back = cv::imread("../bck.jpg");
 
 	cout << "resising an image" << endl;
 	cv::resize(objectImage, objectImage, cv::Size(300, 300));
@@ -50,11 +65,9 @@ int main(){
 
 	cout << "applying transformations" << endl;
 
-	// colors will need to be generated according to the label
-	int mcolors [3] = {23, 245, 70};
-	cv::Mat mask = getMasks(canvas.clone(), mcolors);
+	canvas = replace(canvas.clone(), back);
 
-	imshow("mask",mask);
+	imshow("canvas",canvas);
 	k = cv::waitKey(0);
 	
 
