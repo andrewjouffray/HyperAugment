@@ -22,6 +22,7 @@ class Canvas{
 		float[5] aspectRatios = {1.33, 1.66, 1.78, 1.85, 2.39};
 		cv::Mat canvas;
 		cv::Mat mask;
+		cv::Mat blackMask; // bgr black and white mask of the image 
 		cv::Mat background;
 		cv::Mat ooi;
 		vector<vector<int>> rois;
@@ -106,17 +107,18 @@ class Canvas{
 				
 				}	
 
-				// createMasks
+				// Creates a mask of the silouette of the object of interest in a color unique 
+				// to the label 
 				int testColor [3] = {210, 30, 78}; // make sure to properly implement this.
 				createMasks(testColor);
 
 
-				// calculateRois
+				// Calculates an accurate position of all the objects of interest to draw bonding boxes arund them
 				rois = calculateRois();
 				
 				
-				// addBackground
-				canvas = addBackground();
+				// replaces black with a background image
+				addBackground();
 
 
 			
@@ -180,6 +182,10 @@ class Canvas{
         		cv::threshold(mask, mask, thresh, maxValue, cv::THRESH_BINARY);
         		cv::Mat grayMask;
         		cv::cvtColor(mask, mask, cv::COLOR_GRAY2BGR);
+
+			// assing the black mask used in other methods
+			blackMask = maks.clone();
+
         		inRange(mask, cv::Scalar(255, 255, 255), cv::Scalar(255, 255, 255), grayMask);
         		mask.setTo(cv::Scalar(mcolors[0], mcolors[1], mcolors[2]), grayMask);
 
@@ -190,9 +196,23 @@ class Canvas{
 			// write it
 		}
 
+		// adds a background image to the black background of the canvas
 		cv::Mat addBackground(){
-		
-			// write it
+	
+        		// resize the background to fit the canvas
+        		cv::resize(background, background, cv::Size(blackMask.cols, blackMask.rows));
+
+			// all balck pixels become the bacjgorund image
+        		cv::Mat comb = blackMask + background;
+
+			// all remaining white pixels become black
+        		comb.setTo(0, comb == 255); // comb means combined images
+
+			// all black pixels are set to canvas
+        		cv::Mat comb2 =  comb + canvas;
+        		
+			canvas = comb2;
+	
 		}
 
 		void ChangeGamma(){
