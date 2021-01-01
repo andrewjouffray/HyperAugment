@@ -16,28 +16,30 @@ cv::Mat replace(cv::Mat image, cv::Mat background){
 
 
 	// resize the background to fit the canvas
-	cv::resize(background, background, cv::Size(image.rows, image.cols));
+	cv::resize(background, background, cv::Size(image.cols, image.rows));
 
 
-	cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+	cv::Mat cloneMask;
+	cv::cvtColor(image.clone(), cloneMask, cv::COLOR_BGR2GRAY);
 	double thresh = 0;
 	double maxValue = 255;
 	// Binary Threshold
-	cv::threshold(image, image, thresh, maxValue, cv::THRESH_BINARY);
-	cv::Mat mask;
-	cv::cvtColor(image, image, cv::COLOR_GRAY2BGR);
-
-	for(int i=0; i<image.rows; i++){
-    		for(int j=0; j<image.cols; j++){
-
-			std::cout << image.at<uchar>(i,j) << endl;
-
-		
-		}
-	}
+	cv::threshold(cloneMask, cloneMask, thresh, maxValue, cv::THRESH_BINARY);
+	cv::cvtColor(cloneMask, cloneMask, cv::COLOR_GRAY2BGR);
 
 
-	return image;
+	cv::imshow("image", image);
+	int k = cv::waitKey(0);
+
+	// you will need to perform arythmetic (addition) of the two images
+	// you will need to find a way to add the two images only in the spots that matter 
+	cv::Mat comb = cloneMask + background;
+
+	comb.setTo(0, comb == 255); 
+	cv::Mat comb2 =  comb + image;
+
+
+	return comb2;
 
 }
 
