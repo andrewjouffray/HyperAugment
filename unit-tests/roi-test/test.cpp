@@ -8,15 +8,11 @@
 #include "randomFunc.h"
 
 using namespace std;
-
+int thresh = 100;
 
 // this tests the radom functions, lowe res, blurr, create canvas and inserting an image onto the canvas
 
-cv::Mat get_rois(cv::Mat image){
-
-
-	// resize the background to fit the canvas
-	cv::resize(background, background, cv::Size(image.cols, image.rows));
+vector<vector<cv::Point>> get_rois(cv::Mat image){
 
 
 	cv::Mat cloneMask;
@@ -25,21 +21,15 @@ cv::Mat get_rois(cv::Mat image){
 	double maxValue = 255;
 	// Binary Threshold
 	cv::threshold(cloneMask, cloneMask, thresh, maxValue, cv::THRESH_BINARY);
-	cv::cvtColor(cloneMask, cloneMask, cv::COLOR_GRAY2BGR);
+
+	cv::Mat canny_output;
+	cv::Canny(cloneMask, canny_output, thresh, thresh*2);	
+
+    	vector<vector<cv::Point>> contours;
+	cv::findContours(canny_output, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
 
-	cv::imshow("image", image);
-	int k = cv::waitKey(0);
-
-	// you will need to perform arythmetic (addition) of the two images
-	// you will need to find a way to add the two images only in the spots that matter 
-	cv::Mat comb = cloneMask + background;
-
-	comb.setTo(0, comb == 255); 
-	cv::Mat comb2 =  comb + image;
-
-
-	return comb2;
+	return contours;
 
 }
 
@@ -74,7 +64,17 @@ int main(){
 
 	cout << "applying transformations" << endl;
 
-	vector<vector<int>> = get_rois(canvas.clone());
+	vector<vector<cv::Point>> contours = get_rois(canvas.clone());
+
+	vector<vector<cv::Point> > contours_poly( contours.size() );
+    	vector<cv::Rect> boundRect( contours.size() );
+
+    	for( size_t i = 0; i < contours.size(); i++ )
+    	{
+		cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
+        	boundRect[i] = cv::boundingRect( contours_poly[i] );
+		cv::rectangle( canvas, boundRect[i].tl(), boundRect[i].br(), cv::Scalar(255, 255, 255), 2 );
+    	}
 
 	imshow("canvas",canvas);
 	k = cv::waitKey(0);
