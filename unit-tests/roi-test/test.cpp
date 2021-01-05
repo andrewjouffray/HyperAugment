@@ -71,9 +71,19 @@ int main(){
 
     	for( size_t i = 0; i < contours.size(); i++ )
     	{
-		cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
-        	boundRect[i] = cv::boundingRect( contours_poly[i] );
-		cv::rectangle( canvas, boundRect[i].tl(), boundRect[i].br(), cv::Scalar(255, 255, 255), 2 );
+		cout << "iterating over the countours" << endl;
+
+		int areax = cv::contourArea(contours[i]);
+
+		cout << "Area: " << areax << endl;
+
+		// 3000 is a dummy value, best to calculate average
+		if (areax > 3000){
+			cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
+        		boundRect[i] = cv::boundingRect( contours_poly[i] );
+			cv::rectangle( canvas, boundRect[i].tl(), boundRect[i].br(), cv::Scalar(255, 255, 255), 2 );
+
+		}
     	}
 
 	imshow("canvas",canvas);

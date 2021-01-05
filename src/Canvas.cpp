@@ -25,7 +25,7 @@ class Canvas{
 		cv::Mat blackMask; // bgr black and white mask of the image 
 		cv::Mat background;
 		cv::Mat ooi;
-		vector<vector<int>> rois;
+		vector<cv::rect> rois;
 		vector<Ooi> objects; // I might need to define the type Ooi?
 		bool debug = false;
 
@@ -191,9 +191,40 @@ class Canvas{
 
 		}
 
-		vector<vector<int>> calculateRois(){
-		
-			// write it
+		vector<cv::rect> calculateRois(){
+			
+			// if this breaks it might be due to black mask being in brg and not in gray
+				
+			int thresh = 100;
+        		cv::Mat canny_output;
+        		cv::Canny(blackMask, canny_output, thresh, thresh*2);
+
+        		vector<vector<cv::Point>> contours;
+        		cv::findContours(canny_output, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+			vector<vector<cv::Point> > contours_poly( contours.size() );
+        		vector<cv::Rect> boundRect( contours.size() );
+
+        		for( size_t i = 0; i < contours.size(); i++ )
+        		{
+                		cout << "iterating over the countours" << endl;
+
+                		int areax = cv::contourArea(contours[i]);
+
+                		cout << "Area: " << areax << endl;
+
+                		// 3000 is a dummy value, best to calculate average
+                		if (areax > 3000){
+                        		cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
+                        		boundRect[i] = cv::boundingRect( contours_poly[i] );
+               			}
+		        }
+
+			// each rectangle is define like this [x,y,width,height]
+			// Point point0 = Point(rectangle.x, rectangle.y);
+			return boundRect;
+
+
 		}
 
 		// adds a background image to the black background of the canvas
