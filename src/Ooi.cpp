@@ -9,7 +9,7 @@ The canvas creates between 1 - 10 ooi and needs to place them on the Ooi::image 
 the algorithm defines a column on the canvas for each of those objects to be passed in. the left boundary of these
 columns are the Ooi::xAbsolutePos. The vertical boundary is the top of the Ooi::image therefor Ooi::yAbsolutePos always starts at 0
 
-setp1: rotate
+step1: rotate
 step2: scale
 step3: position
 
