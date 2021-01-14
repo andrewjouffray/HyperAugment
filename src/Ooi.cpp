@@ -214,9 +214,9 @@ void Ooi::changeSaturation(){
                 for(int x=0; x<Ooi::image.rows; x++)
                 {
 			// get the current values of a pixel
-                	int cur1 = Ooi::image.at<Vec3b>(Point(y,x))[0];
-                	int cur2 = Ooi::image.at<Vec3b>(Point(y,x))[1];
-                	int cur3 = Ooi::image.at<Vec3b>(Point(y,x))[2];
+                	int cur1 = Ooi::image.at<Vec3b>(cv::Point(y,x))[0];
+                	int cur2 = Ooi::image.at<Vec3b>(cv::Point(y,x))[1];
+                	int cur3 = Ooi::image.at<Vec3b>(cv::Point(y,x))[2];
 
 			// add the modified values 
                 	cur1 += hue;
@@ -229,14 +229,14 @@ void Ooi::changeSaturation(){
                 	if(cur3 < 0) cur3= 0; else if(cur3 > 255) cur3 = 255;
 
 			// set the new values 
-                	Ooi::image.at<Vec3b>(Point(y,x))[0] = cur1;
-                	Ooi::image.at<Vec3b>(Point(y,x))[1] = cur2;
-                	Ooi::image.at<Vec3b>(Point(y,x))[2] = cur3;
+                	Ooi::image.at<Vec3b>(cv::Point(y,x))[0] = cur1;
+                	Ooi::image.at<Vec3b>(cv::Point(y,x))[1] = cur2;
+                	Ooi::image.at<Vec3b>(cv::Point(y,x))[2] = cur3;
                 }
         }
 
 	// coverts the Ooi::image back into BGR
-	cv::cvtColor(img,src,CV_HSV2BGR);
+	cv::cvtColor(Ooi::image,Ooi::image,cv::CV_HSV2BGR);
 		
 }
 
