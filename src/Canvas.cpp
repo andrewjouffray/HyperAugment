@@ -4,7 +4,7 @@ author: Andrew Jouffray
 date: jan 2021
 
 A Canvas is the image that the neural network will end up seeing, millions of unique Canvas::canvases can be generated if needed. Each Canvas::canvas is a backround image, 
-and between 2 and 10 object of interest copied on top of the Canvas::background image, each Canvas::canvas object has a Canvas::mask where a detailed outline of the Canvas::objects in interest in the image 
+and between 2 and a user defined limit of object of interest copied on top of the Canvas::background image, each Canvas::canvas object has a Canvas::mask where a detailed outline of the Canvas::objects in interest in the image 
 are available for the model to learn, Bounding boxes are also available to the model.
 
 step1: define the size and aspect ratio of the Canvas::canvas 
@@ -19,7 +19,7 @@ step6: randomely apply transforamtions: (resolution change, blurr, brightness ch
 
 
 // constructor, params need to be added I think.
-Canvas::Canvas(cv::Mat ooiArg, cv::Mat Canvas::backgroundArg, int maxOoi, int[2] modProbability, bool Canvas::debug ){
+Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int modProbability [2], bool debug, int labelColor [3] ){
 
 	Canvas::ooi = ooiArg;
 	Canvas::background = Canvas::backgroundArg;
@@ -29,20 +29,19 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat Canvas::backgroundArg, int maxOoi, int[2]
 	Canvas::modProb = modProbability;
 
 	// used to randomely apply transformations to the Canvas::canvas
-	Canvas::canvasModProb = randomInt(1, 100);
+	canvasModProb = randomInt(1, 100);
 
-	// define the size random between 500 and 720 pixels
+	// define the size random between 500 and 860 pixels
 	Canvas::height = randomInt(500, 860);
 
 	// gets a aspect random ratio from the ratio list
 	int randRatio = randomInt(0, 4);
 	float ratio = Canvas::aspectRatios[randRatio];	
 	float fWidth = Canvas::height * ratio;
-	Canvas::width = (int)fWidth; // gets a with value as integer
+	Canvas::width = (int)fWidth; // gets a width value as integer
 
 	// create Canvas::canvas and set it to black Canvas::canvas to black
-	cv::Mat blkImage(320, 240, CV_8UC3, cv::Scalar(0, 0, 0));
-	Canvas::canvas = blkImage;
+	cv::Mat Canvas::canvas(Canvas::width, Canvas::height, CV_8UC3, cv::Scalar(0, 0, 0));
 
 	//define the number of Ooi to be created for this Canvas::canvas
 	Canvas::numObjects = randomInt(2, Canvas::maxObjects);
@@ -50,12 +49,11 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat Canvas::backgroundArg, int maxOoi, int[2]
 	// one object per column to avoid overlapping of Canvas::objects on the image
 	Canvas::columnWidth = Canvas::width / Canvas::numObjects;
 
-	createCanvas();
+	Canvas::createCanvas();
 
 	// Creates a Canvas::mask of the silouette of the object of interest in a color unique 
-	// to the label 
-	int testColor [3] = {210, 30, 78}; // make sure to properly implement this.
-	createMasks(testColor);
+	// to the label
+	Canvas::createMasks(labelColor);
 
 
 	// Calculates an accurate position of all the Canvas::objects of interest to draw bonding boxes arund them
@@ -63,19 +61,19 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat Canvas::backgroundArg, int maxOoi, int[2]
 				
 				
 	// replaces black with a Canvas::background image
-	addBackground();
+	Canvas::addBackground();
 
 	// transformations
 	if (Canvas::canvasModProb % 2 == 0){
-		changeBrightness();
+		Canvas::changeBrightness();
 	}
 
 	if (Canvas::canvasModProd > 75){
-		blurr();
+		Canvas::blurr();
 	}
 
 	if (Canvas::canvasModProd % 5 == 0){
-		lowerRes();
+		Canvas::lowerRes();
 	}
 
 
@@ -85,7 +83,7 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat Canvas::backgroundArg, int maxOoi, int[2]
 // generates the image
 void Canvas::createCanvas(){
 
-	for(int i = 0; i < Canvas::numObjects; i ++){
+	for(int i = 0; i <= Canvas::numObjects; i ++){
 
 		int absolutePos = Canvas::columnWidth * i;
 
@@ -94,7 +92,7 @@ void Canvas::createCanvas(){
 		objects.push_back(objectOfInterest);
 
 		// get the position of the object in the image
-		int[4] positions = objectOfInterest.getPosition();
+		int positions [4]= objectOfInterest.getPosition();
 		int x1 = positions[0];
 		int y1 = positions[1];
 		int x2 = positions[2];
@@ -111,9 +109,9 @@ void Canvas::createCanvas(){
 			// maybe add a counter for failures?
 			if(Canvas::debug ) {
 					
-				cout << "> (Canvas::canvas) could not insert object into Canvas::canvas" << endl;
+				cout << "> (Canvas::canvas) could not insert object into canvas" << endl;
 				cout << "> (Canvas::canvas) x1, y1, x2, y2: "+x1+", "+y1+", "+x2+", "+y2 << endl;
-				cout << "> (Canvas::canvas) Canvas::canvas size, rows, cols: " +Canvas::canvas.rows+", "+Canvas::canvas.cols;
+				cout << "> (Canvas::canvas) canvas size, rows, cols: " +Canvas::canvas.rows+", "+Canvas::canvas.cols;
 			}
 			else{
 						

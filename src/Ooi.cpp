@@ -23,7 +23,7 @@ note: everytime I mention 'object' in the comments, I'm referring to the object 
 
 
 // constructor
-Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolutePos, int[2] probabilities, bool debug){
+Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolutePos, int probabilities [2], bool debug){
 
 	// prints a lot of info id set to true
 	Ooi::debug = debug;

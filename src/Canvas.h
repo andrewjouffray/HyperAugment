@@ -31,7 +31,7 @@ public:
 	vector<Ooi> objects; // I might need to define the type Ooi?
 	bool debug = false;
 
-	Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int[2] modProbability, bool debug);
+	Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int modProbability [2], bool debug, int labelColor [3]);
 
 	void createCanvas();
 
