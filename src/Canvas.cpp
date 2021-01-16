@@ -42,7 +42,7 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> mo
 	Canvas::width = (int)fWidth; // gets a width value as integer
 
 	// create Canvas::canvas and set it to black Canvas::canvas to black
-	cv::Mat blkImage(Canvas::width, Canvas::height, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Mat blkImage(Canvas::height, Canvas::width, CV_8UC3, cv::Scalar(0, 0, 0));
 	Canvas::canvas = blkImage;
 
 	//define the number of Ooi to be created for this Canvas::canvas
@@ -99,8 +99,6 @@ void Canvas::createCanvas(){
 		Ooi objectOfInterest = Ooi(ooi, Canvas::columnWidth, Canvas::height, absolutePos, Canvas::modProb, Canvas::debug );
 		objects.push_back(objectOfInterest);
 
-		cout << "Created the Ooi, now adding it to the canvas" << endl;
-
 		// get the position of the object in the image
 		vector<int> positions = objectOfInterest.getPosition();
 		int x1 = positions.at(0);
@@ -108,9 +106,9 @@ void Canvas::createCanvas(){
 		int x2 = positions.at(2);
 		int y2 = positions.at(3);
 
+		cv::Mat objectImage = objectOfInterest.getObject();
 		// overlay the object onto the Canvas::canvas 
-		try{
-			cv::Mat objectImage = objectOfInterest.getObject();
+		try{	
 			cv::Mat inset(Canvas::canvas, cv::Rect(x1, y1, x2, y2));
 			objectImage.copyTo(inset);
 				
@@ -121,11 +119,12 @@ void Canvas::createCanvas(){
 					
 				cout << "> (Canvas::canvas) could not insert object into canvas" << endl;
 				cout << "> (Canvas::canvas) x1, y1, x2, y2: " << x1 << ", " <<y1<<", "<<x2<<", "<<y2 << endl;
-				cout << "> (Canvas::canvas) canvas size, rows, cols: " <<Canvas::canvas.rows<<", "<<Canvas::canvas.cols;
+				cout << "> (Canvas::canvas) canvas size, rows, cols: " <<Canvas::canvas.rows<<", "<<Canvas::canvas.cols << endl;
+				cout << "> (Canvas::canvas) object height " << objectImage.rows << endl;
 			}
 			else{
 						
-				cout << "> (Canvas::canvas) could not insert object into Canvas::canvas";
+				cout << "> (Canvas::canvas) could not insert object into Canvas::canvas" << endl;
 			}
 				
 		}	
@@ -211,12 +210,7 @@ vector<cv::Rect> Canvas::calculateRois(){
 
         for( size_t i = 0; i < contours.size(); i++ )
         {
-                cout << "iterating over the countours" << endl;
-
                 int areax = cv::contourArea(contours[i]);
-
-                cout << "Area: " << areax << endl;
-
                 // 3000 is a dummy value, best to calculate average
                	if (areax > 3000){
                         cv::approxPolyDP( contours[i], contours_poly[i], 3, true );

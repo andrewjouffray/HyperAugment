@@ -23,7 +23,7 @@ note: everytime I mention 'object' in the comments, I'm referring to the object 
 
 
 // constructor
-Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, vector<int> probabilities, bool debug){
+Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePosArg, vector<int> probabilities, bool debug){
 
 	// prints a lot of info id set to true
 	Ooi::debug = debug;
@@ -36,11 +36,8 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	//Rotate the object to a random angle between 0 and 360
         int angle = Ooi::randomValue % 360;
 
-	cout << "before rotate" << endl;
-
         rotate(angle);
 
-	cout << "OOI, before affine" << endl;
 	// defines the probability that the Ooi::image will have an affine transform and/or a saturation change
 	// 1 = 10%, 2 = 20%, 3 = 33% etc...
 	int affineProbability = probabilities.at(0);
@@ -49,12 +46,9 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	if (random <= affineProbability){
 		affineTransform();
 	}
-	cout << "OOI affine worked going to change saturation" << endl;
 	if (random <= saturationProbability){
 		changeSaturation();
 	}
-	cout << "OOI saturation worked" << Ooi::debug << endl;
-
 	// get the height and width after possible transformations
 	Ooi::ooiWidth = Ooi::image.cols;
 	Ooi::ooiHeight = Ooi::image.rows;
@@ -62,8 +56,6 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 
 	// determine the maximum scale to shrink or expand the Ooi::image so that it still fits in the canvas
 	float maxScaleHeight = ((float)colHeight / (float)Ooi::ooiHeight) - 0.01;
-
-	cout << "just calculated max height scale" << maxScaleHeight << endl;
 
 	float maxScaleWidth = ((float)colWidth / (float)Ooi::ooiWidth) - 0.01;
 	if(maxScaleHeight > maxScaleWidth){
@@ -102,12 +94,8 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	}
 
 	//sets x1 y1
-	Ooi::xAbsolutePos = Ooi::xOffset;
+	Ooi::xAbsolutePos = xAbsolutePosArg + Ooi::xOffset;
 	Ooi::yAbsolutePos = Ooi::yOffset;
-
-	//sets x2 y2
-        Ooi::ooiWidth += Ooi::xAbsolutePos;
-        Ooi::ooiHeight += Ooi::yAbsolutePos;	
 		
 }
 
@@ -115,19 +103,24 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 // code from user Lars Schillingmann https://stackoverflow.com/questions/22041699/rotate-an-Ooi::image-without-cropping-in-opencv-in-c
 void Ooi::rotate(int angle){
 
+
+	angle = angle * -1;
+
+
+
 	cout << "angle" << angle << endl;
 
 	// get rotation matrix for rotating the Ooi::image around its center in pixel coordinates
     	cv::Point2f center((Ooi::image.cols-1)/2.0, (Ooi::image.rows-1)/2.0);
 
-    	cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+    	cv::Mat rot = cv::getRotationMatrix2D(center, (double)angle, 1.0);
 
     	// determine bounding rectangle, center not relevant
-    	cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), Ooi::image.size(), angle).boundingRect2f();
+    	cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), Ooi::image.size(), (double)angle).boundingRect2f();
 
     	// adjust transformation matrix
-    	rot.at<float>(0,2) += bbox.width/2.0 - Ooi::image.cols/2.0;
-    	rot.at<float>(1,2) += bbox.height/2.0 - Ooi::image.rows/2.0;
+    	rot.at<double>(0,2) += bbox.width/2.0 - Ooi::image.cols/2.0;
+    	rot.at<double>(1,2) += bbox.height/2.0 - Ooi::image.rows/2.0;
 
     	cv::warpAffine(Ooi::image, Ooi::image, rot, bbox.size());
 
