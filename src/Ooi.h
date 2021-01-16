@@ -29,7 +29,7 @@ public:
 	cv::Mat image;
 	vector<int> positions;
 
-	Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int probabilities [2], bool debug);
+	Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, vector<int> probabilities, bool debug);
 
 	void rotate(int angle);
 

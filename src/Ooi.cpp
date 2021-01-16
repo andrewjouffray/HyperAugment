@@ -23,7 +23,7 @@ note: everytime I mention 'object' in the comments, I'm referring to the object 
 
 
 // constructor
-Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int probabilities [2], bool debug){
+Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, vector<int> probabilities, bool debug){
 
 	// prints a lot of info id set to true
 	Ooi::debug = debug;
@@ -39,8 +39,8 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 
 	// defines the probability that the Ooi::image will have an affine transform and/or a saturation change
 	// 1 = 10%, 2 = 20%, 3 = 33% etc...
-	int affineProbability = probabilities[0];
-	int saturationProbability = probabilities[1];
+	int affineProbability = probabilities.at(0);
+	int saturationProbability = probabilities.at(1);
 	int random = Ooi::randomValue % 10;
 	if (random <= affineProbability){
 		affineTransform();

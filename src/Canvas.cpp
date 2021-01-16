@@ -19,17 +19,17 @@ step6: randomely apply transforamtions: (resolution change, blurr, brightness ch
 
 
 // constructor, params need to be added I think.
-Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int modProbability [2], bool debug, int labelColor [3] ){
+Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> modProbability, bool debug, vector<int> labelColor){
 
 	Canvas::ooi = ooiArg;
-	Canvas::background = Canvas::backgroundArg;
-	Canvas::maxObjects = maxOoi
+	Canvas::background = backgroundArg;
+	Canvas::maxObjects = maxOoi;
 
 	// probablity of modifying the Oois not the whole Canvas::canvas			
 	Canvas::modProb = modProbability;
 
 	// used to randomely apply transformations to the Canvas::canvas
-	canvasModProb = randomInt(1, 100);
+	int canvasModProb = randomInt(1, 100);
 
 	// define the size random between 500 and 860 pixels
 	Canvas::height = randomInt(500, 860);
@@ -41,7 +41,8 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int modProbabi
 	Canvas::width = (int)fWidth; // gets a width value as integer
 
 	// create Canvas::canvas and set it to black Canvas::canvas to black
-	cv::Mat Canvas::canvas(Canvas::width, Canvas::height, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Mat blkImage(Canvas::width, Canvas::height, CV_8UC3, cv::Scalar(0, 0, 0));
+	Canvas::canvas = blkImage;
 
 	//define the number of Ooi to be created for this Canvas::canvas
 	Canvas::numObjects = randomInt(2, Canvas::maxObjects);
@@ -64,17 +65,18 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int modProbabi
 	Canvas::addBackground();
 
 	// transformations
-	if (Canvas::canvasModProb % 2 == 0){
+	if (canvasModProb % 2 == 0){
 		Canvas::changeBrightness();
 	}
 
-	if (Canvas::canvasModProd > 75){
+	if (canvasModProb > 75){
 		Canvas::blurr();
 	}
 
-	if (Canvas::canvasModProd % 5 == 0){
+	if (canvasModProb % 5 == 0){
 		Canvas::lowerRes();
 	}
+	
 
 
 		
@@ -104,14 +106,14 @@ void Canvas::createCanvas(){
 			cv::Mat inset(Canvas::canvas, cv::Rect(x1, y1, x2, y2));
 			objectImage.copyTo(inset);
 				
-		}catch{
+		}catch(...){
 
 			// maybe add a counter for failures?
 			if(Canvas::debug ) {
 					
 				cout << "> (Canvas::canvas) could not insert object into canvas" << endl;
-				cout << "> (Canvas::canvas) x1, y1, x2, y2: "+x1+", "+y1+", "+x2+", "+y2 << endl;
-				cout << "> (Canvas::canvas) canvas size, rows, cols: " +Canvas::canvas.rows+", "+Canvas::canvas.cols;
+				cout << "> (Canvas::canvas) x1, y1, x2, y2: " << x1 << ", " <<y1<<", "<<x2<<", "<<y2 << endl;
+				cout << "> (Canvas::canvas) canvas size, rows, cols: " <<Canvas::canvas.rows<<", "<<Canvas::canvas.cols;
 			}
 			else{
 						
@@ -146,8 +148,8 @@ void Canvas::lowerRes(){
 	int newHeight = (int)newHeightf;
 
 	cv::Mat lowRes;
-	cv::resize(Canvas::canvas, lowRes, cv::(newWidth, newHeight));
-	cv::resize(lowRes, Canvas::canvas, cv::(Canvas::width, Canvas::height));
+	cv::resize(Canvas::canvas, lowRes, cv::Size(newWidth, newHeight));
+	cv::resize(lowRes, Canvas::canvas, cv::Size(Canvas::width, Canvas::height));
 
 }
 
@@ -164,11 +166,11 @@ void Canvas::blurr(){
 }
 
 // each label in a dataset has a different colored Canvas::mask
-void Canvas::createMasks(int mcolors [3]){
+void Canvas::createMasks(vector<int> mcolors){
 
 	// FUTURE UPDATE: get the thresholded value once and not in each method
 
-	Canvas::mask = Canvas::canvas.clone()
+	Canvas::mask = Canvas::canvas.clone();
         cv::cvtColor(Canvas::mask, Canvas::mask, cv::COLOR_BGR2GRAY);
         double thresh = 0;
         double maxValue = 255;
@@ -178,14 +180,14 @@ void Canvas::createMasks(int mcolors [3]){
         cv::cvtColor(Canvas::mask, Canvas::mask, cv::COLOR_GRAY2BGR);
 
 	// assing the black Canvas::mask used in other methods
-	Canvas::blackMask = maks.clone();
+	Canvas::blackMask = mask.clone();
 
         inRange(Canvas::mask, cv::Scalar(255, 255, 255), cv::Scalar(255, 255, 255), grayMask);
-        Canvas::mask.setTo(cv::Scalar(mcolors[0], mcolors[1], mcolors[2]), grayMask);
+        Canvas::mask.setTo(cv::Scalar(mcolors.at(0), mcolors.at(1), mcolors.at(2)), grayMask);
 
 }
 
-vector<cv::rect> Canvas::calculateRois(){
+vector<cv::Rect> Canvas::calculateRois(){
 			
 	// if this breaks it might be due to black Canvas::mask being in brg and not in gray
 				
@@ -222,7 +224,7 @@ vector<cv::rect> Canvas::calculateRois(){
 }
 
 // adds a Canvas::background image to the black Canvas::background of the Canvas::canvas
-cv::Mat Canvas::addBackground(){
+void Canvas::addBackground(){
 	
         // resize the Canvas::background to fit the Canvas::canvas
         cv::resize(Canvas::background, Canvas::background, cv::Size(Canvas::blackMask.cols, Canvas::blackMask.rows));
@@ -240,10 +242,10 @@ cv::Mat Canvas::addBackground(){
 	
 }
 
-void Canvas::ChangeBrightness(){
+void Canvas::changeBrightness(){
 
 	// HSV stands for Hue Saturation Value(Brightness)
-       	cv::cvtColor(Ooi::Canvas::canvas,Ooi::Canvas::canvas,CV_BGR2HSV);
+       	cv::cvtColor(Canvas::canvas,Canvas::canvas,cv::COLOR_BGR2HSV);
 
        	// hsv values are on a scale from 0 to 255
         int defaultVal = 255;
@@ -254,12 +256,12 @@ void Canvas::ChangeBrightness(){
         int value = randValue - defaultVal;
 
         // iterate over the Ooi::image
-        for(int y=0; y<Ooi::image.cols; y++)
+        for(int y=0; y<Canvas::canvas.cols; y++)
         {
-                for(int x=0; x<Ooi::image.rows; x++)
+                for(int x=0; x<Canvas::canvas.rows; x++)
                 {
                         // get the current values of a pixel
-                        int cur3 = Ooi::image.at<Vec3b>(cv::Point(y,x))[2];
+                        int cur3 = Canvas::canvas.at<cv::Vec3b>(cv::Point(y,x))[2];
 
                         // add the modified values 
                        	cur3 += value;
@@ -268,11 +270,11 @@ void Canvas::ChangeBrightness(){
                         if(cur3 < 0) cur3= 0; else if(cur3 > 255) cur3 = 255;
 
                         // set the new values 
-                        Ooi::image.at<Vec3b>(cv::Point(y,x))[2] = cur3;
+			Canvas::canvas.at<cv::Vec3b>(cv::Point(y,x))[2] = cur3;
                 }
         }
 
-        cv::cvtColor(Canvas::canvas,Canvas::canvas,cv::CV_HSV2BGR);
+        cv::cvtColor(Canvas::canvas,Canvas::canvas,cv::COLOR_HSV2BGR);
 
 
 }
@@ -313,4 +315,4 @@ vector<vector<int>> Canvas::getRois(){
 
 
 
-}
+

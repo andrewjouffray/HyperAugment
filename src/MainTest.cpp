@@ -20,9 +20,9 @@ int main(){
 	cv::Mat ooi = cv::imread("../unit-tests/roi-test/selfie.png");
 
 	// create a randomColor
-	int colors [3] = {randomInt(10, 255), randomInt(10, 255), randomInt(10, 255)};
+	vector<int> colors = {randomInt(10, 255), randomInt(10, 255), randomInt(10, 255)};
 
-	int mod [2] = {4, 5};
+	vector<int> mod = {4, 5};
 
 	// try to create a canvas  
 	Canvas canvas(ooi, back, 6, mod, true, colors);

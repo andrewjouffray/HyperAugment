@@ -20,18 +20,18 @@ public:
 	int maxObjects;
 	int numObjects;
 	int columnWidth;
-	int[2] modProb; // modification probability
-	float[5] aspectRatios = {1.33, 1.66, 1.78, 1.85, 2.39};
+	vector<int> modProb; // modification probability
+	float aspectRatios [5] = {1.33, 1.66, 1.78, 1.85, 2.39};
 	cv::Mat canvas;
 	cv::Mat mask;
 	cv::Mat blackMask; // bgr black and white mask of the image 
 	cv::Mat background;
 	cv::Mat ooi;
-	vector<cv::rect> rois;
+	vector<cv::Rect> rois;
 	vector<Ooi> objects; // I might need to define the type Ooi?
 	bool debug = false;
 
-	Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int modProbability [2], bool debug, int labelColor [3]);
+	Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> modProbability, bool debug, vector<int> labelColor);
 
 	void createCanvas();
 
@@ -39,13 +39,13 @@ public:
 
 	void blurr();
 
-	void createMasks(int mcolors [3]);
+	void createMasks(vector<int> mcolors);
 
-	vector<cv::rect> calculateRois();
+	vector<cv::Rect> calculateRois();
 			
-	cv::Mat addBackground();
+	void addBackground();
 	
-	void ChangeBrightness();
+	void changeBrightness();
 
 	cv::Mat getCanvas();
 		
@@ -54,6 +54,6 @@ public:
 	vector<vector<int>> getRois();
 
 
-}
+};
 
 #endif
