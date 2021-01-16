@@ -27,7 +27,19 @@ int main(){
 	// try to create a canvas  
 	Canvas canvas(ooi, back, 6, mod, true, colors);
 
-	cv::imshow("canvas",canvas.getCanvas());
+	vector<vector<int>> rois = canvas.getRois();
+
+	cv::Mat image = canvas.getCanvas();
+
+	for (int i = 0; i < rois.size(); i ++){
+	
+	
+		vector<int> curr = rois.at(i);
+		cv::Rect rect(curr.at(0), curr.at(1), curr.at(2), curr.at(3));
+		cv::rectangle(image, rect, cv::Scalar(0, 255, 0));
+	}
+
+	cv::imshow("canvas",image);
 	cv::imshow("mask",canvas.getMask());
 	int k = cv::waitKey(0);
 
