@@ -35,8 +35,12 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 
 	//Rotate the object to a random angle between 0 and 360
         int angle = Ooi::randomValue % 360;
+
+	cout << "before rotate" << endl;
+
         rotate(angle);
 
+	cout << "OOI, before affine" << endl;
 	// defines the probability that the Ooi::image will have an affine transform and/or a saturation change
 	// 1 = 10%, 2 = 20%, 3 = 33% etc...
 	int affineProbability = probabilities.at(0);
@@ -45,9 +49,11 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 	if (random <= affineProbability){
 		affineTransform();
 	}
+	cout << "OOI affine worked going to change saturation" << endl;
 	if (random <= saturationProbability){
 		changeSaturation();
 	}
+	cout << "OOI saturation worked" << Ooi::debug << endl;
 
 	// get the height and width after possible transformations
 	Ooi::ooiWidth = Ooi::image.cols;
@@ -55,8 +61,11 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 
 
 	// determine the maximum scale to shrink or expand the Ooi::image so that it still fits in the canvas
-	float maxScaleHeight = (colHeight / Ooi::ooiHeight) - 0.01;
-	float maxScaleWidth = (colWidth / Ooi::ooiWidth) - 0.01;
+	float maxScaleHeight = ((float)colHeight / (float)Ooi::ooiHeight) - 0.01;
+
+	cout << "just calculated max height scale" << maxScaleHeight << endl;
+
+	float maxScaleWidth = ((float)colWidth / (float)Ooi::ooiWidth) - 0.01;
 	if(maxScaleHeight > maxScaleWidth){
 		Ooi::maxScale= maxScaleWidth;
 	}else{
@@ -105,22 +114,23 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 
 // code from user Lars Schillingmann https://stackoverflow.com/questions/22041699/rotate-an-Ooi::image-without-cropping-in-opencv-in-c
 void Ooi::rotate(int angle){
-			
-	cv::Mat src = Ooi::image;
+
+	cout << "angle" << angle << endl;
+
 	// get rotation matrix for rotating the Ooi::image around its center in pixel coordinates
-    	cv::Point2f center((src.cols-1)/2.0, (src.rows-1)/2.0);
+    	cv::Point2f center((Ooi::image.cols-1)/2.0, (Ooi::image.rows-1)/2.0);
+
     	cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+
     	// determine bounding rectangle, center not relevant
-    	cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), src.size(), angle).boundingRect2f();
+    	cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), Ooi::image.size(), angle).boundingRect2f();
+
     	// adjust transformation matrix
-    	rot.at<float>(0,2) += bbox.width/2.0 - src.cols/2.0;
-    	rot.at<float>(1,2) += bbox.height/2.0 - src.rows/2.0;
+    	rot.at<float>(0,2) += bbox.width/2.0 - Ooi::image.cols/2.0;
+    	rot.at<float>(1,2) += bbox.height/2.0 - Ooi::image.rows/2.0;
 
-    	cv::Mat dst;
-    	cv::warpAffine(src, dst, rot, bbox.size());
+    	cv::warpAffine(Ooi::image, Ooi::image, rot, bbox.size());
 
-	Ooi::image = src;
-		
 }
 
 void Ooi::scaleImage(float scale){

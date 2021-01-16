@@ -21,6 +21,7 @@ step6: randomely apply transforamtions: (resolution change, blurr, brightness ch
 // constructor, params need to be added I think.
 Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> modProbability, bool debug, vector<int> labelColor){
 
+	Canvas::debug = debug;
 	Canvas::ooi = ooiArg;
 	Canvas::background = backgroundArg;
 	Canvas::maxObjects = maxOoi;
@@ -50,7 +51,12 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> mo
 	// one object per column to avoid overlapping of Canvas::objects on the image
 	Canvas::columnWidth = Canvas::width / Canvas::numObjects;
 
+
+	cout << "Before creating the canvas" << endl;
+
 	Canvas::createCanvas();
+
+	cout << "Before creating the Masks" << endl;
 
 	// Creates a Canvas::mask of the silouette of the object of interest in a color unique 
 	// to the label
@@ -92,6 +98,8 @@ void Canvas::createCanvas(){
 		// create an object to put on the Canvas::canvas
 		Ooi objectOfInterest = Ooi(ooi, Canvas::columnWidth, Canvas::height, absolutePos, Canvas::modProb, Canvas::debug );
 		objects.push_back(objectOfInterest);
+
+		cout << "Created the Ooi, now adding it to the canvas" << endl;
 
 		// get the position of the object in the image
 		vector<int> positions = objectOfInterest.getPosition();
