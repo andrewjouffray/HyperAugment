@@ -15,20 +15,21 @@ using namespace std;
 
 class Ooi{
 
-public 
+public: 
 	int ooiHeight;
 	int ooiWidth;
 	int xAbsolutePos;
-	int yAbsolutePosi;
+	int yAbsolutePos;
 	int xOffset;
 	int yOffset;
-	const int randomValue;
+	int randomValue;
 	float maxScale;
 	float minScale;
 	bool debug = false;
 	cv::Mat image;
+	vector<int> positions;
 
-	Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int[2] probabilities, bool debug);
+	Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int probabilities [2], bool debug);
 
 	void rotate(int angle);
 
@@ -38,12 +39,12 @@ public
 
 	void changeSaturation();	
 
-	int[4] getPosition();
+	vector<int> getPosition();
 
 	cv::Mat getObject();
 		
 
 
-}
+};
 
 #endif

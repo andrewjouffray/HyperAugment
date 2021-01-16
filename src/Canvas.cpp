@@ -92,11 +92,11 @@ void Canvas::createCanvas(){
 		objects.push_back(objectOfInterest);
 
 		// get the position of the object in the image
-		int positions [4]= objectOfInterest.getPosition();
-		int x1 = positions[0];
-		int y1 = positions[1];
-		int x2 = positions[2];
-		int y2 = positions[3];
+		vector<int> positions = objectOfInterest.getPosition();
+		int x1 = positions.at(0);
+		int y1 = positions.at(1);
+		int x2 = positions.at(2);
+		int y2 = positions.at(3);
 
 		// overlay the object onto the Canvas::canvas 
 		try{

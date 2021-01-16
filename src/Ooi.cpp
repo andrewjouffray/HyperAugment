@@ -23,7 +23,7 @@ note: everytime I mention 'object' in the comments, I'm referring to the object 
 
 
 // constructor
-Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolutePos, int probabilities [2], bool debug){
+Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos, int probabilities [2], bool debug){
 
 	// prints a lot of info id set to true
 	Ooi::debug = debug;
@@ -50,8 +50,8 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolu
 	}
 
 	// get the height and width after possible transformations
-	Ooi::ooiWidth = Ooi::image.size.width();
-	Ooi::ooiHeight = Ooi::image.size.height();
+	Ooi::ooiWidth = Ooi::image.cols;
+	Ooi::ooiHeight = Ooi::image.rows;
 
 
 	// determine the maximum scale to shrink or expand the Ooi::image so that it still fits in the canvas
@@ -60,20 +60,20 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolu
 	if(maxScaleHeight > maxScaleWidth){
 		Ooi::maxScale= maxScaleWidth;
 	}else{
-		Ooi::maxScale= maxScaleHeight
+		Ooi::maxScale= maxScaleHeight;
 	}
 	// I use 1.3 to make sure that the minimum scale smaller than max but still proportional to max, so you
 	// don't endup with huge object, and a tiny object the size of three pixel
 	Ooi::minScale= Ooi::maxScale/ 1.3;
 
-	float scale = randomFloat<float>(minScale, maxScale);
+	float scale = randomFloat(minScale, maxScale);
 
 	// print all scale info when Ooi::debugging at runtime this can be very helpful
 	if (Ooi::debug){
-		cout << "> ===== ooi width and height information ===== " << endl
+		cout << "> ===== ooi width and height information ===== " << endl;
 		cout << "> col height: " + to_string(colHeight) + "| col width: " + to_string(colWidth) << endl;
 		cout << "> ooi height: " + to_string(Ooi::ooiHeight) + "| ooi width: " + to_string(Ooi::ooiWidth) << endl;
-		cout << "> max scale height: " + to_string(maxScaleHeigth) + "| max scale width: " + to_string(maxScaleWidth) << endl;
+		cout << "> max scale height: " + to_string(maxScaleHeight) + "| max scale width: " + to_string(maxScaleWidth) << endl;
 		cout << "> max scale: " + to_string(maxScale) + "| min scale: " + to_string(minScale) << endl;
 	}
 
@@ -81,10 +81,10 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolu
 
 	//defines the absolute position of the object in the canvas within given boundaries
 	try{
-		int maxXOffset = colWidth - width;
-		int maxYOffset = colHeight - height;
-		Ooi::xOffset = randomInt(0, maxXOffSet);
-            	Ooi::yOffset = randomInt(0, maxYOffSet);
+		int maxXOffset = colWidth - Ooi::ooiWidth;
+		int maxYOffset = colHeight - Ooi::ooiHeight;
+		Ooi::xOffset = randomInt(0, maxXOffset);
+            	Ooi::yOffset = randomInt(0, maxYOffset);
 			
 	}catch(...){
 		cout << "> error while computing offsets" << endl;
@@ -97,7 +97,7 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int Ooi::xAbsolu
 	Ooi::yAbsolutePos = Ooi::yOffset;
 
 	//sets x2 y2
-        Ooi::ooiWidth += AbsolutePos;
+        Ooi::ooiWidth += Ooi::xAbsolutePos;
         Ooi::ooiHeight += Ooi::yAbsolutePos;	
 		
 }
@@ -152,8 +152,8 @@ void Ooi::affineTransform(){
         	cout << "value3: " + to_string(randVal3) << endl;
 
         	//Ooi::image size for troubleshooting
-        	cout << "col: " + to_string(src.cols) << endl;
-        	cout << "rows: " + to_string(src.rows) << endl;
+        	cout << "col: " + to_string(Ooi::image.cols) << endl;
+        	cout << "rows: " + to_string(Ooi::image.rows) << endl;
 	}
 
         // points2f means a 2d set of floating point single precision vatiables
@@ -161,24 +161,24 @@ void Ooi::affineTransform(){
 	cv::Point2f srcTri[3];
 
         if (inverted >= 0.5f){
-                srcTri[0] = Point2f( 0.f, 0.f ); // top left
-               	srcTri[1] = Point2f( Ooi::image.cols - 1.f, 0.f ); // bottom left
-                srcTri[2] = Point2f( 0.f, Ooi::image.rows - 1.f ); // top right
+                srcTri[0] = cv::Point2f( 0.f, 0.f ); // top left
+               	srcTri[1] = cv::Point2f( Ooi::image.cols - 1.f, 0.f ); // bottom left
+                srcTri[2] = cv::Point2f( 0.f, Ooi::image.rows - 1.f ); // top right
         }else{
-                srcTri[0] = Point2f( Ooi::image.cols - 1.f, Ooi::image.rows - 1.f ); // bottom right
-                srcTri[1] = Point2f( 0.f, Ooi::image.rows - 1.f ); // top right
-                srcTri[2] = Point2f( Ooi::image.cols - 1.f, 0.f ); // bottom left
+                srcTri[0] = cv::Point2f( Ooi::image.cols - 1.f, Ooi::image.rows - 1.f ); // bottom right
+                srcTri[1] = cv::Point2f( 0.f, Ooi::image.rows - 1.f ); // top right
+                srcTri[2] = cv::Point2f( Ooi::image.cols - 1.f, 0.f ); // bottom left
         }
 
         //destination
 	cv::Point2f dstTri[3];
-        dstTri[0] = Point2f( 0.f, Ooi::image.rows*randVal3 );
-        dstTri[1] = Point2f( Ooi::image.cols*0.85f, Ooi::image.rows*randVal1 );
-        dstTri[2] = Point2f( Ooi::image.cols*0.15f, Ooi::image.rows*randVal2 );
+        dstTri[0] = cv::Point2f( 0.f, Ooi::image.rows*randVal3 );
+        dstTri[1] = cv::Point2f( Ooi::image.cols*0.85f, Ooi::image.rows*randVal1 );
+        dstTri[2] = cv::Point2f( Ooi::image.cols*0.15f, Ooi::image.rows*randVal2 );
 
         // create a wrap matrix
 	cv::Mat warp_mat = getAffineTransform( srcTri, dstTri );
-	cv::Mat warp_dst = Mat::zeros( Ooi::image.rows, Ooi::image.cols, Ooi::image.type() );
+	cv::Mat warp_dst = cv::Mat ( Ooi::image.rows, Ooi::image.cols, Ooi::image.type() );
 	cv::warpAffine( Ooi::image, warp_dst, warp_mat, warp_dst.size() );
 
 		
@@ -189,7 +189,7 @@ void Ooi::changeSaturation(){
 
 
         // HSV stands for Hue Saturation Value(Brightness)
-	cv::cvtColor(Ooi::image,Ooi::image,CV_BGR2HSV);
+	cv::cvtColor(Ooi::image,Ooi::image, cv::COLOR_BGR2HSV);
 
 
 	// hsv values are on a scale from 0 to 255
@@ -198,11 +198,11 @@ void Ooi::changeSaturation(){
         // less than 255 will reduce the current hue value
         // greater than 255 will increase the hue value
 
-        int hueVal = randomInt<int>(155, 355);
+        int hueVal = randomInt(155, 355);
         int hue = hueVal  - defaultVal;
 
 
-        int satVal = randomInt<int>(155, 355);
+        int satVal = randomInt(155, 355);
        	int saturation = satVal  - defaultVal;
 
         // value is brightness, we modify this on the whole canvas not on one object, we don't modify it here.
@@ -214,9 +214,9 @@ void Ooi::changeSaturation(){
                 for(int x=0; x<Ooi::image.rows; x++)
                 {
 			// get the current values of a pixel
-                	int cur1 = Ooi::image.at<Vec3b>(cv::Point(y,x))[0];
-                	int cur2 = Ooi::image.at<Vec3b>(cv::Point(y,x))[1];
-                	int cur3 = Ooi::image.at<Vec3b>(cv::Point(y,x))[2];
+                	int cur1 = Ooi::image.at<cv::Vec3b>(cv::Point(y,x))[0];
+                	int cur2 = Ooi::image.at<cv::Vec3b>(cv::Point(y,x))[1];
+                	int cur3 = Ooi::image.at<cv::Vec3b>(cv::Point(y,x))[2];
 
 			// add the modified values 
                 	cur1 += hue;
@@ -229,21 +229,25 @@ void Ooi::changeSaturation(){
                 	if(cur3 < 0) cur3= 0; else if(cur3 > 255) cur3 = 255;
 
 			// set the new values 
-                	Ooi::image.at<Vec3b>(cv::Point(y,x))[0] = cur1;
-                	Ooi::image.at<Vec3b>(cv::Point(y,x))[1] = cur2;
-                	Ooi::image.at<Vec3b>(cv::Point(y,x))[2] = cur3;
+                	Ooi::image.at<cv::Vec3b>(cv::Point(y,x))[0] = cur1;
+                	Ooi::image.at<cv::Vec3b>(cv::Point(y,x))[1] = cur2;
+                	Ooi::image.at<cv::Vec3b>(cv::Point(y,x))[2] = cur3;
                 }
         }
 
 	// coverts the Ooi::image back into BGR
-	cv::cvtColor(Ooi::image,Ooi::image,cv::CV_HSV2BGR);
+	cv::cvtColor(Ooi::image,Ooi::image,cv::COLOR_HSV2BGR);
 		
 }
 
-int[4] Ooi::getPosition(){
+vector<int> Ooi::getPosition(){
 		
-	int[4] positions = {Ooi::xAbsolutePos, Ooi::yAbsolutePos, Ooi::ooiWidth, Ooi::ooiHeight};
-	return positions;
+	Ooi::positions.push_back(Ooi::xAbsolutePos); 
+	Ooi::positions.push_back(Ooi::yAbsolutePos); 
+	Ooi::positions.push_back(Ooi::ooiWidth);
+       	Ooi::positions.push_back(Ooi::ooiHeight);
+
+	return Ooi::positions;
 		
 }
 
