@@ -1,0 +1,3 @@
+
+[17/01/2121] MainTest: some of the outputted images are buggey might be due to two threads trying to access the background image at the same time, we could
+check if the same happends when we have a lot of different backgorund images to choose from
