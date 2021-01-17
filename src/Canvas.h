@@ -53,6 +53,8 @@ public:
 		
 	vector<vector<int>> getRois();
 
+	void log(const char* input);
+
 
 };
 

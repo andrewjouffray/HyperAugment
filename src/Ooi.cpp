@@ -71,11 +71,11 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 
 	// print all scale info when Ooi::debugging at runtime this can be very helpful
 	if (Ooi::debug){
-		cout << "> ===== ooi width and height information ===== " << endl;
-		cout << "> col height: " + to_string(colHeight) + "| col width: " + to_string(colWidth) << endl;
-		cout << "> ooi height: " + to_string(Ooi::ooiHeight) + "| ooi width: " + to_string(Ooi::ooiWidth) << endl;
-		cout << "> max scale height: " + to_string(maxScaleHeight) + "| max scale width: " + to_string(maxScaleWidth) << endl;
-		cout << "> max scale: " + to_string(maxScale) + "| min scale: " + to_string(minScale) << endl;
+		cout << "> (Ooi) ===== ooi width and height information ===== " << endl;
+		cout << "> (Ooi) col height: " + to_string(colHeight) + "| col width: " + to_string(colWidth) << endl;
+		cout << "> (Ooi) ooi height: " + to_string(Ooi::ooiHeight) + "| ooi width: " + to_string(Ooi::ooiWidth) << endl;
+		cout << "> (Ooi) max scale height: " + to_string(maxScaleHeight) + "| max scale width: " + to_string(maxScaleWidth) << endl;
+		cout << "> (Ooi) max scale: " + to_string(maxScale) + "| min scale: " + to_string(minScale) << endl;
 	}
 
 	scaleImage(scale);
@@ -88,7 +88,7 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
             	Ooi::yOffset = randomInt(0, maxYOffset);
 			
 	}catch(...){
-		cout << "> error while computing offsets" << endl;
+		cout << "> (Ooi) error while computing offsets" << endl;
 		Ooi::xOffset = 1;
 		Ooi::yOffset = 1;
 	}
@@ -145,13 +145,13 @@ void Ooi::affineTransform(){
         // print random value for troubleshooting
 	if (Ooi::debug){
 
-        	cout << "value1: " + to_string(randVal1) << endl;     
-        	cout << "value2: " + to_string(randVal2) << endl;
-        	cout << "value3: " + to_string(randVal3) << endl;
+        	cout << "> (Ooi) Affine random Value1: " + to_string(randVal1) << endl;     
+        	cout << "> (Ooi) Affine random Value2: " + to_string(randVal2) << endl;
+        	cout << "> (Ooi) Affine random value3: " + to_string(randVal3) << endl;
 
         	//Ooi::image size for troubleshooting
-        	cout << "col: " + to_string(Ooi::image.cols) << endl;
-        	cout << "rows: " + to_string(Ooi::image.rows) << endl;
+        	cout << "> (Ooi) ooi col: " + to_string(Ooi::image.cols) << endl;
+        	cout << "> (Ooi) ooi rows: " + to_string(Ooi::image.rows) << endl;
 	}
 
         // points2f means a 2d set of floating point single precision vatiables

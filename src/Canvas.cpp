@@ -86,7 +86,7 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> mo
 // generates the image
 void Canvas::createCanvas(){
 
-	for(int i = 0; i <= Canvas::numObjects; i ++){
+	for(int i = 0; i < Canvas::numObjects; i ++){
 
 		int absolutePos = Canvas::columnWidth * i;
 
@@ -134,6 +134,8 @@ void Canvas::createCanvas(){
 
 void Canvas::lowerRes(){
 
+	Canvas::log("Lowering the resolution");
+
 	// reduction factor
 	float factor = 0.0;
 
@@ -156,6 +158,9 @@ void Canvas::lowerRes(){
 }
 
 void Canvas::blurr(){
+
+
+	Canvas::log(" > (Canvas) blurring the image");
 
 	int kernelSize = randomInt(1, 5);
 
@@ -191,13 +196,14 @@ void Canvas::createMasks(vector<int> mcolors){
 
 vector<cv::Rect> Canvas::calculateRois(){
 			
-	// if this breaks it might be due to black Canvas::mask being in brg and not in gray
-				
 	int thresh = 100;
 
-	cv::imshow("mask", Canvas::blackMask);
-	int k = cv::waitKey(0);
+	if(Canvas::debug){
+		cv::imshow("blackMask before getting rois", Canvas::blackMask);
+		int k = cv::waitKey(0);
+	}
 
+	// the input for find countout needs to be in gray so another conversions, need to see if there is a more effective way
 	cv::Mat contourInput;
 	cv::cvtColor(Canvas::blackMask, contourInput, cv::COLOR_BGR2GRAY);
 
@@ -211,8 +217,10 @@ vector<cv::Rect> Canvas::calculateRois(){
         {
                 int areax = cv::contourArea(contours[i]);
                 // 2000 is a dummy value, best to calculate average
-		cout << "> area " << areax << endl;
                	if (areax > 2000){
+			if (Canvas::debug){
+				cout << "> (Canvas) roi area: " << areax << endl;
+			}
                         cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
                         boundRect[i] = cv::boundingRect( contours_poly[i] );
                	}
@@ -245,6 +253,8 @@ void Canvas::addBackground(){
 }
 
 void Canvas::changeBrightness(){
+
+	Canvas::log("changing brightness");
 
 	// HSV stands for Hue Saturation Value(Brightness)
        	cv::cvtColor(Canvas::canvas,Canvas::canvas,cv::COLOR_BGR2HSV);
@@ -314,7 +324,17 @@ vector<vector<int>> Canvas::getRois(){
 }
 
 
+void Canvas::log(const char* message){
 
+	if(Canvas::debug){
+	
+		cout << "> (Canvas) " <<  message << endl;
+	
+	
+	}
+
+
+}
 
 
 
