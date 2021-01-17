@@ -51,12 +51,7 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> mo
 	// one object per column to avoid overlapping of Canvas::objects on the image
 	Canvas::columnWidth = Canvas::width / Canvas::numObjects;
 
-
-	cout << "Before creating the canvas" << endl;
-
 	Canvas::createCanvas();
-
-	cout << "Before creating the Masks" << endl;
 
 	// Creates a Canvas::mask of the silouette of the object of interest in a color unique 
 	// to the label
@@ -199,11 +194,15 @@ vector<cv::Rect> Canvas::calculateRois(){
 	// if this breaks it might be due to black Canvas::mask being in brg and not in gray
 				
 	int thresh = 100;
-        cv::Mat canny_output;
-        cv::Canny(Canvas::blackMask, canny_output, thresh, thresh*2);
+
+	cv::imshow("mask", Canvas::blackMask);
+	int k = cv::waitKey(0);
+
+	cv::Mat contourInput;
+	cv::cvtColor(Canvas::blackMask, contourInput, cv::COLOR_BGR2GRAY);
 
         vector<vector<cv::Point>> contours;
-        cv::findContours(canny_output, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(contourInput, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
 	vector<vector<cv::Point> > contours_poly( contours.size() );
         vector<cv::Rect> boundRect( contours.size() );
@@ -211,8 +210,9 @@ vector<cv::Rect> Canvas::calculateRois(){
         for( size_t i = 0; i < contours.size(); i++ )
         {
                 int areax = cv::contourArea(contours[i]);
-                // 3000 is a dummy value, best to calculate average
-               	if (areax > 3000){
+                // 2000 is a dummy value, best to calculate average
+		cout << "> area " << areax << endl;
+               	if (areax > 2000){
                         cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
                         boundRect[i] = cv::boundingRect( contours_poly[i] );
                	}

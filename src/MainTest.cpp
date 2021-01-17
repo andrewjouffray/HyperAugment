@@ -25,7 +25,7 @@ int main(){
 	vector<int> mod = {4, 5};
 
 	// try to create a canvas  
-	Canvas canvas(ooi, back, 6, mod, true, colors);
+	Canvas canvas(ooi, back, 6, mod, false, colors);
 
 	vector<vector<int>> rois = canvas.getRois();
 

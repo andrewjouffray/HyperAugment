@@ -103,12 +103,7 @@ Ooi::Ooi(cv::Mat objectOfInterest, int colWidth, int colHeight, int xAbsolutePos
 // code from user Lars Schillingmann https://stackoverflow.com/questions/22041699/rotate-an-Ooi::image-without-cropping-in-opencv-in-c
 void Ooi::rotate(int angle){
 
-
 	angle = angle * -1;
-
-
-
-	cout << "angle" << angle << endl;
 
 	// get rotation matrix for rotating the Ooi::image around its center in pixel coordinates
     	cv::Point2f center((Ooi::image.cols-1)/2.0, (Ooi::image.rows-1)/2.0);
@@ -181,8 +176,7 @@ void Ooi::affineTransform(){
 
         // create a wrap matrix
 	cv::Mat warp_mat = getAffineTransform( srcTri, dstTri );
-	cv::Mat warp_dst = cv::Mat ( Ooi::image.rows, Ooi::image.cols, Ooi::image.type() );
-	cv::warpAffine( Ooi::image, warp_dst, warp_mat, warp_dst.size() );
+	cv::warpAffine( Ooi::image, Ooi::image, warp_mat, Ooi::image.size() );
 
 		
 }
