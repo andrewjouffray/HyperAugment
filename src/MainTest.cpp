@@ -46,6 +46,7 @@ int main(){
 	
         string path = "/home/andrew/Projects/Projects/Video/Weeds2/nenuphare/data1595119927.9510028output.avi";
         string save = "/home/andrew/Projects/Projects/augment-test/";
+	string saveRoi = save + "rois"
 
         int64_t  start = timeSinceEpochMillisec();
 
