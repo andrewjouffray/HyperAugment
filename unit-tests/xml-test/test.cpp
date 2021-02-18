@@ -18,9 +18,9 @@ void build_simple_doc( )
 {
 
 	// dummy vectors
-	vector<int> roi1 = vect(4, 10);
-	vector<int> roi2 = vect(4, 6);
-	vector<int> roi3 = vect(4, 23);
+	vector<int> roi1(4, 10);
+	vector<int> roi2(4, 6);
+	vector<int> roi3(4, 23);
 
 	// dummy vector in the format of the getRois method
 	vector<vector<int>> rois;
@@ -41,16 +41,6 @@ void build_simple_doc( )
 	TiXmlElement * height = new TiXmlElement( "height" );
 	TiXmlElement * depth = new TiXmlElement( "depth" );
 	TiXmlElement * segmented = new TiXmlElement( "segmented" );
-	TiXmlElement * object = new TiXmlElement( "object" );
-	TiXmlElement * name = new TiXmlElement( "name" );
-	TiXmlElement * pose = new TiXmlElement( "pose" );
-	TiXmlElement * truncated = new TiXmlElement( "truncated" );
-	TiXmlElement * difficult = new TiXmlElement( "difficult" );
-	TiXmlElement * bndbox = new TiXmlElement( "bndbox" );
-	TiXmlElement * xmin = new TiXmlElement( "xmin" );
-	TiXmlElement * ymin = new TiXmlElement( "ymin" );
-	TiXmlElement * xmax = new TiXmlElement( "xmax" );
-	TiXmlElement * ymax = new TiXmlElement( "ymax" );
 
 
 	TiXmlText * folderName = new TiXmlText( "masks-test" );
@@ -61,10 +51,6 @@ void build_simple_doc( )
 	TiXmlText * heightVal = new TiXmlText( "736" );
 	TiXmlText * depthVal = new TiXmlText( "3" );
 	TiXmlText * segmentedVal = new TiXmlText( "0" );
-	TiXmlText * objectName = new TiXmlText( "person" );
-	TiXmlText * objectPose = new TiXmlText( "Unspecified" );
-	TiXmlText * objectTruncated = new TiXmlText( "0" );
-	TiXmlText * objectDifficult = new TiXmlText( "0" );
 
 
 	annotation->LinkEndChild( folder );
@@ -93,6 +79,34 @@ void build_simple_doc( )
 
 	// add all the objects here might need to create them in the loop
 	for(vector<int> roi : rois){
+
+		TiXmlElement * object = new TiXmlElement( "object" );
+		TiXmlElement * name = new TiXmlElement( "name" );
+		TiXmlElement * pose = new TiXmlElement( "pose" );
+		TiXmlElement * truncated = new TiXmlElement( "truncated" );
+		TiXmlElement * difficult = new TiXmlElement( "difficult" );
+		TiXmlElement * bndbox = new TiXmlElement( "bndbox" );
+		TiXmlElement * xmin = new TiXmlElement( "xmin" );
+		TiXmlElement * ymin = new TiXmlElement( "ymin" );
+		TiXmlElement * xmax = new TiXmlElement( "xmax" );
+		TiXmlElement * ymax = new TiXmlElement( "ymax" );
+
+		TiXmlText * objectName = new TiXmlText( "person" );
+		TiXmlText * objectPose = new TiXmlText( "Unspecified" );
+		TiXmlText * objectTruncated = new TiXmlText( "0" );
+		TiXmlText * objectDifficult = new TiXmlText( "0" );
+
+		string x1 = to_string(roi[0]);
+		string y1 = to_string(roi[1]);
+		string x2 = to_string(roi[2]);
+		string y2 = to_string(roi[3]);
+
+		TiXmlText * objectXmin = new TiXmlText( x1.c_str() );
+		TiXmlText * objectYmin = new TiXmlText( y1.c_str() );
+		TiXmlText * objectXmax = new TiXmlText( x2.c_str() );
+		TiXmlText * objectYmax = new TiXmlText( y2.c_str() );
+
+
 	
 		annotation->LinkEndChild( object );
 			object->LinkEndChild(name);
@@ -101,8 +115,22 @@ void build_simple_doc( )
 				pose->LinkEndChild(objectPose);
 			object->LinkEndChild(truncated);
 				truncated->LinkEndChild(objectTruncated);
-			object->LinkEndChild()
+			object->LinkEndChild(difficult);
+				difficult->LinkEndChild(objectDifficult);
+			object->LinkEndChild(bndbox);
+				bndbox->LinkEndChild(xmin);
+					xmin->LinkEndChild(objectXmin);
+				bndbox->LinkEndChild(ymin);
+					ymin->LinkEndChild(objectYmin);
+				bndbox->LinkEndChild(xmax);
+					xmax->LinkEndChild(objectXmax);
+				bndbox->LinkEndChild(ymax);
+					ymax->LinkEndChild(objectYmax);
+
+
 	}
+
+	
 
 
 
