@@ -28,8 +28,8 @@ https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-
 #include <string>
 #include <filesystem>
 #include <chrono>
-#include "randomFunc.h"
-#include "Canvas.h"
+#include "./inculde/andomFunc.h"
+#include "./include/Canvas.h"
 #include <sys/stat.h>
 #include "./vendors/tinyxml/tinyxml.h"
 #include "./vendors/tinyxml/tinystr.h"
@@ -51,16 +51,19 @@ public:
         string imgs;
         string xml;
 
+	string datasetName;
+	string labelName;
+
 Label(String background, String input, String output){
 
 	inputPath = input;
 	outputPath = output;
 	backgroundPath = background;
 
-	// three
-        string masks = outputPath + "masks/";
-        string imgs = outputPath + "imgs/";
-        string xml = outputPath + "xml/";
+	// three folders to be created
+        masks = outputPath + "masks/";
+        imgs = outputPath + "imgs/";
+        xml = outputPath + "xml/";
 
 	// gets the list of inputs and background files
 	backgrounds = getBackgrounds();
@@ -69,31 +72,95 @@ Label(String background, String input, String output){
 	// creates the output directories to save everything in
 	bool valid = createOutputDirs();
 
+	// for each input file
+	for(string inFile : inputs){
+
+		// make sue the input is a full path not just 
+		cout << inFile << endl;
+
+		cv::VideoCapture cap(inFile);
+
+        	// create a randomColor
+       		vector<int> colors = {randomInt(10, 255), randomInt(10, 255), randomInt(10, 255)};
+
+        	vector<int> mod = {4, 5};
+
+        	// create 6 canvases per frame
+        	int multiply = 6;
+
+        	cv::Mat frame;
+
+		#pragma omp parallel    // start the parallel region
+		{
+                	#pragma omp single  // let the while loop execute by one thread and generate tasks
+                	while (1){
+
+                        	if (!cap.read(frame)){
+
+                                	cout << "> (Label) No more frames." << endl;
+                                	break;
+
+                        	}
+
+                        	#pragma omp task
+                        	{
+
+                                	for(int i = 0; i < multiply; i ++){
+
+                                        	// creates and saves a canvas
+                                        	Canvas canvas(frame, back, 6, mod, false, colors);
+                                        	int64_t  current = timeSinceEpochMillisec();
+                                        	string name = to_string(current) + "hpa";
+                                        	saveImg(canvas.getCanvas(), name);
+						saveMask(canvas.getMask(), name);
+						saveXML(canvas.getRois(), name, );
+                                	}
+
+
+
+                        	}
+
+                	} // end of while loop and single region
+
+                // at this point we also wait until all tasks that were created have finished
+
+        	} // end of parallel region
+
+	}
+
+
 
 }
 
 void saveImg(cv::Mat img, string name){
 
-	string path = imgs + name;
+	string path = imgs + name + ".jpg";
 	cv::imwrite(path, img);
 }
 
 void saveMask(cv::Mat mask, string name){
 
-	string path = masks + name;
+	string path = masks + name + ".jpg";
 	cv::imwrite(path, mask);
 
 }
 
-void saveXML(vector<vector<int>> rois, string name, string folder, string path, cv::Mat img){
+void saveXML(vector<vector<int>> rois, string name, string datasetName, string path, string labelName, cv::Mat img){
 
+	// image dimentions 
 	int height = img.rows;
 	int width = img.cols;
+	int channels = img.channels();
 
 	string sHeight = to_string(height);
        	string sWidth = to_string(width);
+	string sChannel = to_string(channels);
 
-	string fullPath = outputPath + xml;	
+	// save path
+	string fullPath = imgs + name + ".xml";	
+
+	// image being refered to path
+	string filename = name + ".jpg";
 
 	TiXmlDocument doc;
         TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
@@ -110,13 +177,13 @@ void saveXML(vector<vector<int>> rois, string name, string folder, string path, 
         TiXmlElement * segmented = new TiXmlElement( "segmented" );
 
 
-        TiXmlText * folderName = new TiXmlText( "masks-test" );
-        TiXmlText * fileNameText = new TiXmlText( "fileName.jpg" );
-        TiXmlText * databaseName = new TiXmlText( "Unknown" );
+        TiXmlText * folderName = new TiXmlText( "xml" );
+        TiXmlText * fileNameText = new TiXmlText( filename.c_str() );
+        TiXmlText * databaseName = new TiXmlText( datasetName.c_str() );
         TiXmlText * pathText = new TiXmlText( fullPath.c_str() );
         TiXmlText * widthVal = new TiXmlText( sWidth.c_str() );
         TiXmlText * heightVal = new TiXmlText( sHeight.c_str() );
-        TiXmlText * depthVal = new TiXmlText( "3" );
+        TiXmlText * depthVal = new TiXmlText( sChannel.c_str() );
         TiXmlText * segmentedVal = new TiXmlText( "0" );
 
 
@@ -344,6 +411,12 @@ vector<string> getBackgrounds(){
         return backgrounds;
 
 
+}
+
+void loadConfig(){
+
+
+	// need to finish
 }
 
 
