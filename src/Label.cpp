@@ -15,7 +15,7 @@ Step5: Save the Canvases.jpg Masks.jpg and Roi.xml files
 
 sources:
 
-https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
+//https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
 
 
 
@@ -42,8 +42,22 @@ class Label{
 
 public:
 
+        // all the int values represent percentages
+        int obj_affineProb = 30;
+        int obj_changeSatProb = 10;
+
+        int can_changeBrightProb = 10;
+        int can_blurrProb = 10;
+        int can_lowerRes = 10;
+
+        int canvas_per_frame = 4;
+        int max_objects = 5;
+
+        // paths and names of folders
+        string labelName;
+        string outputPath = fs::current_path() + "/data/output/"; // need to add the dataset name as the label
+        string datasetName;
 	String inputPath;
-	String outputPath;
 	String backgroundPath;
 	vector<String> backgrounds;
 	vector<String> inputs;
@@ -51,19 +65,11 @@ public:
         string imgs;
         string xml;
 
-	string datasetName;
-	string labelName;
+Label(string pathToYeet){ // load the config from yeet file
 
-Label(String background, String input, String output){
-
-	inputPath = input;
-	outputPath = output;
-	backgroundPath = background;
-
-	// three folders to be created
-        masks = outputPath + "masks/";
-        imgs = outputPath + "imgs/";
-        xml = outputPath + "xml/";
+	// reads the config file and sets all the parameters
+	vector<vector<string>> file = parseFile(pathToYeet);
+	setSettings(file);
 
 	// gets the list of inputs and background files
 	backgrounds = getBackgrounds();
@@ -80,7 +86,7 @@ Label(String background, String input, String output){
 
 		cv::VideoCapture cap(inFile);
 
-        	// create a randomColor
+        	// create a randomColor for the mask
        		vector<int> colors = {randomInt(10, 255), randomInt(10, 255), randomInt(10, 255)};
 
         	vector<int> mod = {4, 5};
@@ -108,7 +114,7 @@ Label(String background, String input, String output){
                                 	for(int i = 0; i < multiply; i ++){
 
                                         	// creates and saves a canvas
-                                        	Canvas canvas(frame, back, 6, mod, false, colors);
+                                        	Canvas canvas(frame, back, 6, mod, false, colors); // <---------------- Update this
                                         	int64_t  current = timeSinceEpochMillisec();
                                         	string name = to_string(current) + "hpa";
                                         	saveImg(canvas.getCanvas(), name);
@@ -145,7 +151,7 @@ void saveMask(cv::Mat mask, string name){
 
 }
 
-void saveXML(vector<vector<int>> rois, string name, string datasetName, string path, string labelName, cv::Mat img){
+void saveXML(vector<vector<int>> rois, string name, string datasetName, string labelName, cv::Mat img){
 
 	// image dimentions 
 	int height = img.rows;
@@ -413,10 +419,131 @@ vector<string> getBackgrounds(){
 
 }
 
-void loadConfig(){
+// parses the .yeet file into a vector of string vectors
+vector<vector<string>> parseFile(string pathToYeet)
+{
+
+        string line;
+        ifstream myfile (pathToYeet);
+        vector<vector<string>> parsedFile;
+        if (myfile.is_open()){
+                while ( getline (myfile,line) ){
+                        //cout << line << '\n';
+
+                        std::string delimiter = " ";
+
+                        vector<string> splitLine;
+                        size_t pos = 0;
+                        std::string token;
+                        while ((pos = line.find(delimiter)) != std::string::npos) {
+                                token = line.substr(0, pos);
+                                // check if empty char
+                                if (token.compare(" ") != 0 && token.compare("") != 0){
+                                        splitLine.push_back(token);
+                                }
+                                line.erase(0, pos + delimiter.length());
+                        }
+                        if (token.compare(" ") != 0){
+                                splitLine.push_back(line);
+                        }
+                        parsedFile.push_back(splitLine);
+                }
+         myfile.close();
+ 
+        }
+        else{ cout << "Unable to open file";
+
+        }
+
+        return parsedFile;
+}
+
+// goes through each line and reads the config
+void setSettings (vector<vector<string>> file){
+
+        for(vector<string> line : file){
+
+                // get the first word of the line
+                string word = line.at(0);
+
+                if(word.compare("dataset_name") == 0){
+
+                        datasetName = line.at(2);
+
+                }else if(word.compare("label_name") == 0){
+
+                        labelName = line.at(2);
+                }
+                else if(word.compare("output_path") == 0){
+
+                        outputPath = line.at(2);
+                }
+                else if(word.compare("background_path") == 0){
+
+                        backgroundPath = line.at(2);
+                }
+                else if(word.compare("max_objects_per_canvas") == 0){
+
+                        objects = stoi(line.at(2));
+                }
+                else if(word.compare("canvases_per_frame") == 0){
+
+                        mult = stoi(line.at(2));
+                }
+                else if(word.compare("canvas_blurr") == 0){
+
+                        can_blurrProb = stoi(line.at(2));
+                }
+                else if(word.compare("object_saturation") == 0){
+
+                        obj_changeSatProb = stoi(line.at(2));
+                }
+                else if(word.compare("canvas_lower_resolution") == 0){
+
+                        can_lowerRes = stoi(line.at(2));
+                }
+                else if(word.compare("canvas_change_brightness") == 0){
+
+                        can_changeBrightProb = stoi(line.at(2));
+                }
+                else if(word.compare("object_affine_transform") == 0){
+
+                        obj_affineProb = stoi(line.at(2));
+                }
+                else if(word.compare("//") == 0){
+
+                        //do nothing
+                }
 
 
-	// need to finish
+        }
+	
+	if (outputPath.compare("default")){
+	
+		outputPath = fs::current_path() + "/data/output/" + datasetName + "/";
+	}
+
+	// three folders to be created
+        masks = outputPath + "masks/";
+        imgs = outputPath + "imgs/";
+        xml = outputPath + "xml/";
+
+	// prints out all the settings allowing the user to check that everything is ok
+        cout << "\n========================= Label Configuration ===================================" << endl;
+        cout << "> readFile: path to background:                             " << pathToBackground << endl;
+        cout << "> readFile: output path:                                    " << output << endl;
+        cout << "> readFile: dataset name:                                   " << dataset << endl;
+        cout << "> readFile: label name:                                     " << label << endl;
+        cout << "> readFile: number of canvases created per video frame:     " << mult << endl;
+        cout << "> readFile: max number of objects to be put in each canvas: " << objects << endl;
+        cout << "\n========================= Canvas Modification ===================================" << endl;
+        cout << "> readFile: chances of blurring canvas:                     " << can_blurrProb << "%" << endl;
+        cout << "> readFile: chances of lowering the canvas resolution:      " << can_lowerRes << "%" << endl;
+        cout << "> readFile: chances of changing the canvas brightness:      " << can_changeBrightProb << "%" << endl;
+        cout << "\n========================= Object Modification ===================================" << endl;
+        cout << "> readFile: chances of changing object color saturation:    " << obj_changeSatProb << "%" << endl;
+        cout << "> readFile: chances of changing object affine transform:    " << obj_affineProb << "%" << endl;
+
 }
 
 
