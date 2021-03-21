@@ -18,13 +18,15 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 	// creates the output directories to save everything in
 	bool valid = Dataset::createOutputDirs();
 
-	for (string label : Dataset::labels){
+	for (string label_path : Dataset::labels){
+
 	
+		string label = Dataset::splitPath(label_path).back();
 
 		cout << "============== creating a mock Label onject =========" << endl;
 		cout << "Label " << label << endl;
 		cout << "Dataset " << Dataset::datasetName << endl;
-		cout << "Input path " << Dataset::inputPath << endl;
+		cout << "Input path " << label_path << endl;
 		cout << "Output path " << Dataset::outputPath << endl;
 		cout << "Object affine %" << Dataset::obj_affineProb << endl;
 		cout << "Dataset::obj_changeSatProb " << Dataset::obj_changeSatProb << endl;
@@ -34,7 +36,7 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 		cout << "Dataset::canvas_per_frame " << Dataset::canvas_per_frame << endl;
 		cout << "Dataset::max_objects " << Dataset::max_objects << endl;
 		cout << "===== mock video files to be augmented ======" << endl;
-		vector<string> videoFiles = getFiles(label);
+		vector<string> videoFiles = getFiles(label_path);
 		for(string video : videoFiles){
 		
 			cout << video << endl;
@@ -202,6 +204,32 @@ vector<string> Dataset::getBackgrounds(){
 
 
 }
+
+
+//split single line
+
+vector<string> Dataset::splitPath(string line){
+
+	std::string delimiter = "/";
+
+        vector<string> splitLine;
+        size_t pos = 0;
+        std::string token;
+        while ((pos = line.find(delimiter)) != std::string::npos) {
+                token = line.substr(0, pos);
+                // check if empty char
+                if (token.compare(" ") != 0 && token.compare("") != 0){
+                        splitLine.push_back(token);
+                }
+                line.erase(0, pos + delimiter.length());
+        }
+        if (token.compare(" ") != 0){
+                splitLine.push_back(line);
+        }
+        return splitLine;
+
+}
+
 
 // parses the .yeet file into a vector of string vectors
 vector<vector<string>> Dataset::parseFile(string path)

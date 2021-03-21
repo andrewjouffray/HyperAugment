@@ -58,6 +58,8 @@ public:
 	// returns a shuffled list of all the .jpg files to be used as a background.
 	vector<string> getBackgrounds();
 
+	vector<string> splitPath(string line);
+
 	vector<vector<string>> parseFile(string pathToYeet);
 
 	void setSettings (vector<vector<string>> file);
