@@ -1,20 +1,22 @@
 
 #include "../include/Dataset.h"
 
-Dataset::Dataset(string pathToYeet){ // load the config from yeet file
+Dataset::Dataset(string pathToDataset){ // load the config from yeet file
+
+	Dataset::inputPath = pathToDataset;
 
 	// reads the config file and sets all the parameters
-	vector<vector<string>> file = parseFile(pathToYeet);
-	setSettings(file);
+	vector<vector<string>> file = Dataset::parseFile(Dataset::inputPath);
+	Dataset::setSettings(file);
 
 	// gets the list of inputs and background files
-	Dataset::backgrounds = getBackgrounds();
+	Dataset::backgrounds = Dataset::getBackgrounds();
 
 	// gets all the Dataset::labels
-	Dataset::labels = getLabels();
+	Dataset::labels = Dataset::getLabels();
 
 	// creates the output directories to save everything in
-	bool valid = createOutputDirs();
+	bool valid = Dataset::createOutputDirs();
 
 	for (string label : Dataset::labels){
 	
@@ -32,7 +34,7 @@ Dataset::Dataset(string pathToYeet){ // load the config from yeet file
 		cout << "Dataset::canvas_per_frame " << Dataset::canvas_per_frame << endl;
 		cout << "Dataset::max_objects " << Dataset::max_objects << endl;
 		cout << "===== mock video files to be augmented ======" << endl;
-		vector<string> videoFiles = getFiles(Dataset::inputPath);
+		vector<string> videoFiles = getFiles(label);
 		for(string video : videoFiles){
 		
 			cout << video << endl;
@@ -132,14 +134,11 @@ int Dataset::dirExists(const char* const path)
 // saves all the names of the files in a given path
 vector<string> Dataset::getFiles(string path){
 
-        cout << "adding " + path << endl;
-        // this is it for now
         vector<string> files;
 
         for(const auto & entry : fs::directory_iterator(path)){
                 string it = entry.path();
 
-                //cout << it << endl;
                 files.push_back(it);
         }
 
@@ -167,7 +166,7 @@ vector<string> Dataset::getLabels(){
 	for (string path : files){
 	
 	
-		if (path.length() > 5 && path.substr(path.length() - 4).compare("yeet")){
+		if (path.length() > 5 && path.substr(path.length() - 4).compare("yeet") == 0){
 		
 			cout << "Dataset: Ignoring the yeet file" << endl;
 		}else{
@@ -197,7 +196,7 @@ vector<string> Dataset::getBackgrounds(){
 
         // shuffle the background images around 
         auto rng = default_random_engine {};
-        shuffle(begin(backgrounds), end(Dataset::backgrounds), rng);
+        shuffle(begin(backgrounds), end(backgrounds), rng);
 
         return backgrounds;
 
@@ -305,7 +304,7 @@ void Dataset::setSettings (vector<vector<string>> file){
 	
 	if (Dataset::outputPath.compare("default") == 0){
 
-		string add_path = "/data/output/";
+		string add_path = "/data/outputs/";
 
 		string current_path = fs::current_path();
 	

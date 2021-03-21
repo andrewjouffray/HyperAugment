@@ -1,5 +1,5 @@
 
-// IMPORTANT: no spaces in any path or name, use _ instead!
+// IMPORTANT: no spaces between the " = " characters, spaces in dataset names are ok
 
 dataset_name=testDataset
 
