@@ -28,14 +28,16 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 		cout << "Dataset " << Dataset::datasetName << endl;
 		cout << "Input path " << label_path << endl;
 		cout << "Output path " << Dataset::outputPath << endl;
-		cout << "Object affine %" << Dataset::obj_affineProb << endl;
-		cout << "Dataset::obj_changeSatProb " << Dataset::obj_changeSatProb << endl;
-		cout << "Dataset::can_changeBrightProb " << Dataset::can_changeBrightProb << endl;
-		cout << "Dataset::can_blurrProb " << Dataset::can_blurrProb << endl;
-		cout << "Dataset::can_lowerRes " << Dataset::can_lowerRes << endl;
-		cout << "Dataset::canvas_per_frame " << Dataset::canvas_per_frame << endl;
-		cout << "Dataset::max_objects " << Dataset::max_objects << endl;
+		cout << "Object affine " << Dataset::obj_affineProb << endl;
+		cout << "obj_changeSatProb " << Dataset::obj_changeSatProb << endl;
+		cout << "can_changeBrightProb " << Dataset::can_changeBrightProb << endl;
+		cout << "can_blurrProb " << Dataset::can_blurrProb << endl;
+		cout << "can_lowerRes " << Dataset::can_lowerRes << endl;
+		cout << "canvas_per_frame " << Dataset::canvas_per_frame << endl;
+		cout << "max_objects " << Dataset::max_objects << endl;
 		cout << "===== mock video files to be augmented ======" << endl;
+
+		// DO NOT FORGET DEBUG
 
 		vector<string> videoFiles = Dataset::getLabelFiles(label_path);
 		for(string video : videoFiles){
