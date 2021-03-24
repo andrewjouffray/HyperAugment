@@ -1,330 +1,143 @@
-/*
-author: Andrew Jouffray
-date: feb 2021
 
-The Label is one of outputs of the neural network it's the name of an object that needs to be 
-detected by the nework. Each Dataset has one or more labels each containing images of a particual object. Example: The Apple dataset might have labels such as "golden delicious" and "honey crisp" etc... each being a directory containing videos of the apples.
+#include "../include/Dataset.h"
 
-The Label class is instantiated by the Dataset class.
+Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 
-Step1: Find the label directory with the given path
-Step2: Find and create the Output directories
-Step3: Read the config.yaml and set all the configuration options
-Step4: Generate the Canvases (using multithreading)
-Step5: Save the Canvases.jpg Masks.jpg and Roi.xml files
-
-sources:
-
-//https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
-
-
-
-*/
-
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <omp.h>
-#include <fstream>
-#include <string>
-#include <filesystem>
-#include <chrono>
-#include "./inculde/andomFunc.h"
-#include "./include/Canvas.h"
-#include <sys/stat.h>
-#include "./vendors/tinyxml/tinyxml.h"
-#include "./vendors/tinyxml/tinystr.h"
-
-
-namespace fs = std::filesystem;
-using namespace std;
-
-class Dataset{
-
-public:
-
-Dataset(){ // load the config from yeet file
-
-	// read it's config file 
-	
-	// interate over the sub_dir
-	
-	// read their config file 
-	
-	// check all values in the config file
-	
-	// check all paths
-	
-	// good error handling 
+	Dataset::inputPath = pathToDataset;
 
 	// reads the config file and sets all the parameters
-	vector<vector<string>> file = parseFile(pathToYeet);
-	setSettings(file);
+	vector<vector<string>> file = Dataset::parseFile(Dataset::inputPath);
+	Dataset::setSettings(file);
 
 	// gets the list of inputs and background files
-	backgrounds = getBackgrounds();
-	inputs = getInputs();
+	Dataset::backgrounds = Dataset::getBackgrounds();
+
+	// gets all the Dataset::labels
+	Dataset::labels = Dataset::getLabels();
 
 	// creates the output directories to save everything in
-	bool valid = createOutputDirs();
+	bool valid = Dataset::createOutputDirs();
 
-	// for each input file
-	for(string inFile : inputs){
+	for (string label_path : Dataset::labels){
 
-		// make sue the input is a full path not just 
-		cout << inFile << endl;
+	
+		string label = Dataset::splitPath(label_path);
 
-		cv::VideoCapture cap(inFile);
+		cout << "============== creating a mock Label onject =========" << endl;
+		cout << "Label " << label << endl;
+		cout << "Dataset " << Dataset::datasetName << endl;
+		cout << "Input path " << label_path << endl;
+		cout << "Output path " << Dataset::outputPath << endl;
+		cout << "Object affine %" << Dataset::obj_affineProb << endl;
+		cout << "Dataset::obj_changeSatProb " << Dataset::obj_changeSatProb << endl;
+		cout << "Dataset::can_changeBrightProb " << Dataset::can_changeBrightProb << endl;
+		cout << "Dataset::can_blurrProb " << Dataset::can_blurrProb << endl;
+		cout << "Dataset::can_lowerRes " << Dataset::can_lowerRes << endl;
+		cout << "Dataset::canvas_per_frame " << Dataset::canvas_per_frame << endl;
+		cout << "Dataset::max_objects " << Dataset::max_objects << endl;
+		cout << "===== mock video files to be augmented ======" << endl;
 
-        	// create a randomColor for the mask
-       		vector<int> colors = {randomInt(10, 255), randomInt(10, 255), randomInt(10, 255)};
-
-        	vector<int> mod = {4, 5};
-
-        	// create 6 canvases per frame
-        	int multiply = 6;
-
-        	cv::Mat frame;
-
-		#pragma omp parallel    // start the parallel region
-		{
-                	#pragma omp single  // let the while loop execute by one thread and generate tasks
-                	while (1){
-
-                        	if (!cap.read(frame)){
-
-                                	cout << "> (Label) No more frames." << endl;
-                                	break;
-
-                        	}
-
-                        	#pragma omp task
-                        	{
-
-                                	for(int i = 0; i < multiply; i ++){
-
-                                        	// creates and saves a canvas
-                                        	Canvas canvas(frame, back, 6, mod, false, colors); // <---------------- Update this
-                                        	int64_t  current = timeSinceEpochMillisec();
-                                        	string name = to_string(current) + "hpa";
-                                        	saveImg(canvas.getCanvas(), name);
-						saveMask(canvas.getMask(), name);
-						saveXML(canvas.getRois(), name, );
-                                	}
-
-
-
-                        	}
-
-                	} // end of while loop and single region
-
-                // at this point we also wait until all tasks that were created have finished
-
-        	} // end of parallel region
+		vector<string> videoFiles = Dataset::getLabelFiles(label_path);
+		for(string video : videoFiles){
+		
+			cout << video << endl;
+		}
 
 	}
 
-
-
 }
 
-void saveImg(cv::Mat img, string name){
+// checks and returns all the files in a path
+vector<string> Dataset::getLabelFiles(string path){
 
-	string path = imgs + name + ".jpg";
-	cv::imwrite(path, img);
-}
+	vector<string> ext;
+	string avi = "avi";
+	string mp4 = "mp4";
+	ext.push_back(avi.c_str());
+	ext.push_back(mp4.c_str());
 
-void saveMask(cv::Mat mask, string name){
+	vector<string> videoFiles;
+       
+	videoFiles = Dataset::getFiles(path, ext);
 
-	string path = masks + name + ".jpg";
-	cv::imwrite(path, mask);
+	int size = videoFiles.size();
 
-}
+	if (size == 0){
 
-void saveXML(vector<vector<int>> rois, string name, string datasetName, string labelName, cv::Mat img){
+		string message = "no valid input files at ";
+		string error = message + path;
+		throw error; 
+	}else{
+	
+		cout << "Found " << size << " valid files at: " << path << endl;
+	}
 
-	// image dimentions 
-	int height = img.rows;
-	int width = img.cols;
-	int channels = img.channels();
-
-	string sHeight = to_string(height);
-       	string sWidth = to_string(width);
-	string sChannel = to_string(channels);
-
-	// save path
-	string fullPath = imgs + name + ".xml";	
-
-	// image being refered to path
-	string filename = name + ".jpg";
-
-	TiXmlDocument doc;
-        TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
-        TiXmlElement * annotation = new TiXmlElement( "annotation" );
-        TiXmlElement * folder = new TiXmlElement( "folder" );
-        TiXmlElement * filename = new TiXmlElement( "filename" );
-        TiXmlElement * path = new TiXmlElement( "path" );
-        TiXmlElement * source = new TiXmlElement( "source" );
-        TiXmlElement * database = new TiXmlElement( "database" );
-        TiXmlElement * size = new TiXmlElement( "size" );
-        TiXmlElement * width = new TiXmlElement( "width" );
-        TiXmlElement * height = new TiXmlElement( "height" );
-        TiXmlElement * depth = new TiXmlElement( "depth" );
-        TiXmlElement * segmented = new TiXmlElement( "segmented" );
-
-
-        TiXmlText * folderName = new TiXmlText( "xml" );
-        TiXmlText * fileNameText = new TiXmlText( filename.c_str() );
-        TiXmlText * databaseName = new TiXmlText( datasetName.c_str() );
-        TiXmlText * pathText = new TiXmlText( fullPath.c_str() );
-        TiXmlText * widthVal = new TiXmlText( sWidth.c_str() );
-        TiXmlText * heightVal = new TiXmlText( sHeight.c_str() );
-        TiXmlText * depthVal = new TiXmlText( sChannel.c_str() );
-        TiXmlText * segmentedVal = new TiXmlText( "0" );
-
-
-        annotation->LinkEndChild( folder );
-                folder->LinkEndChild(folderName);
-
-        annotation->LinkEndChild( filename );
-                filename->LinkEndChild(fileNameText);
-
-        annotation->LinkEndChild( path );
-                path->LinkEndChild(pathText);
-
-        annotation->LinkEndChild( source );
-                source->LinkEndChild( database );
-                        database->LinkEndChild( databaseName );
-
-        annotation->LinkEndChild( size );
-                size->LinkEndChild( width );
-                        width->LinkEndChild( widthVal );
-                size->LinkEndChild( height );
-                        height->LinkEndChild( heightVal );
-                size->LinkEndChild( depth );
-                        depth->LinkEndChild( depthVal );
-
-        annotation->LinkEndChild( segmented );
-                segmented->LinkEndChild( segmentedVal );
-
-        // add all the objects here might need to create them in the loop
-        for(vector<int> roi : rois){
-
-                TiXmlElement * object = new TiXmlElement( "object" );
-                TiXmlElement * name = new TiXmlElement( "name" );
-                TiXmlElement * pose = new TiXmlElement( "pose" );
-                TiXmlElement * truncated = new TiXmlElement( "truncated" );
-                TiXmlElement * difficult = new TiXmlElement( "difficult" );
-                TiXmlElement * bndbox = new TiXmlElement( "bndbox" );
-                TiXmlElement * xmin = new TiXmlElement( "xmin" );
-                TiXmlElement * ymin = new TiXmlElement( "ymin" );
-                TiXmlElement * xmax = new TiXmlElement( "xmax" );
-                TiXmlElement * ymax = new TiXmlElement( "ymax" );
-
-                TiXmlText * objectName = new TiXmlText( name.c_str() );
-                TiXmlText * objectPose = new TiXmlText( "Unspecified" );
-                TiXmlText * objectTruncated = new TiXmlText( "0" );
-                TiXmlText * objectDifficult = new TiXmlText( "0" );
-
-                string x1 = to_string(roi[0]);
-                string y1 = to_string(roi[1]);
-                string x2 = to_string(roi[2]);
-                string y2 = to_string(roi[3]);
-
-                TiXmlText * objectXmin = new TiXmlText( x1.c_str() );
-                TiXmlText * objectYmin = new TiXmlText( y1.c_str() );
-                TiXmlText * objectXmax = new TiXmlText( x2.c_str() );
-                TiXmlText * objectYmax = new TiXmlText( y2.c_str() );
-
-
-
-                annotation->LinkEndChild( object );
-                        object->LinkEndChild(name);
-                                name->LinkEndChild(objectName);
-                        object->LinkEndChild(pose);
-                                pose->LinkEndChild(objectPose);
-                        object->LinkEndChild(truncated);
-                                truncated->LinkEndChild(objectTruncated);
-                        object->LinkEndChild(difficult);
-                                difficult->LinkEndChild(objectDifficult);
-                        object->LinkEndChild(bndbox);
-                                bndbox->LinkEndChild(xmin);
-                                        xmin->LinkEndChild(objectXmin);
-                                bndbox->LinkEndChild(ymin);
-                                        ymin->LinkEndChild(objectYmin);
-                                bndbox->LinkEndChild(xmax);
-                                        xmax->LinkEndChild(objectXmax);
-                                bndbox->LinkEndChild(ymax);
-                                        ymax->LinkEndChild(objectYmax);
-
-
-        }
-
-
-
-
-
-        doc.LinkEndChild( decl );
-        doc.LinkEndChild( annotation );
-        doc.SaveFile( "labelImgDemo.xml" );
-	// need to test this
+	return videoFiles;
 
 }
 
 // checks and creates all the output directories for a Label
-bool createOutputDirs(){
+bool Dataset::createOutputDirs(){
 
-        if (!dirExists(outputPath.c_str())){
+	cout << "Creating the output directories..." << endl;
 
-                cout << "> Label: " << outputPath << " does not exist." << endl;
+        if (!dirExists(Dataset::outputPath.c_str())){
 
-                if(fs::create_directory(outputPath)){
-                        cout << "> Label: created " << outputPath << endl;
+                cout << "> Label: " << Dataset::outputPath << " does not exist." << endl;
+
+                if(fs::create_directory(Dataset::outputPath)){
+                        cout << "> Label: created " << Dataset::outputPath << endl;
                 }else{
 
-                        cout << "> Label: could not create " << outputPath;
-                        throw "Error: Could not create output path.";
+                        cout << "> Label: could not create " << Dataset::outputPath;
+			string message = "Error: Could not create output path.";
+                        throw message;
                 }
 
         }
 
-        if(dirExists(masks.c_str())){
-                cout << "> Output for masks/ already exists, using existing directory" << endl;
+        if(dirExists(Dataset::masks.c_str())){
+                cout << "> Output for Dataset::masks/ already exists, using existing directory" << endl;
         }else{
 
-                if(fs::create_directory(masks)){
-                        cout << "> Label: created " << masks << endl;
+                if(fs::create_directory(Dataset::masks)){
+                        cout << "> Label: created " << Dataset::masks << endl;
                 }else{
 
-                        cout << "> Label: could not create " << masks << endl;
-                        throw "Error: Could not create masks path.";
+                        cout << "> Label: could not create " << Dataset::masks << endl;
+			string message = "Error: Could not create masks path.";
+                        throw message;
                 }
 
         }
 
-        if(dirExists(imgs.c_str())){
-                cout << "> Output for imgs/ already exists, using existing directory" << endl;
+        if(dirExists(Dataset::imgs.c_str())){
+                cout << "> Output for Dataset::imgs/ already exists, using existing directory" << endl;
         }else{
 
-                if(fs::create_directory(imgs)){
-                        cout << "> Label: created " << imgs << endl;
+                if(fs::create_directory(Dataset::imgs)){
+                        cout << "> Label: created " << Dataset::imgs << endl;
                 }else{
 
-                        cout << "> Label: could not create " << imgs << endl;
-                        throw "Error: Could not create imgs path.";
+                        cout << "> Label: could not create " << Dataset::imgs << endl;
+			string message = "Error: Could not create imgs path.";
+                        throw message;
+
                 }
 
         }
 
-        if(dirExists(xml.c_str())){
-                cout << "> Output for xml/ already exists, using existing directory" << endl;
+        if(dirExists(Dataset::xml.c_str())){
+                cout << "> Output for Dataset::xml/ already exists, using existing directory" << endl;
         }else{
 
-                if(fs::create_directory(xml)){
-                        cout << "> Label: created " << xml << endl;
+                if(fs::create_directory(Dataset::xml)){
+                        cout << "> Label: created " << Dataset::xml << endl;
                 }else{
 
-                        cout << "> Label: could not create " << xml << endl;
-                        throw "Error: Could not create xml path.";
+                        cout << "> Label: could not create " << Dataset::xml << endl;
+			string message = "Error: Could not create xml path.";
+                        throw message;
                 }
 
         }
@@ -335,10 +148,11 @@ bool createOutputDirs(){
 
 }
 
-
 // checks if a directory exists
-int dirExists(const char* const path)
+int Dataset::dirExists(const char* const path)
 {
+
+    cout << "checking if " << path << " exists..." << endl;
     struct stat info;
 
     int statRC = stat( path, &info );
@@ -352,52 +166,115 @@ int dirExists(const char* const path)
     return ( info.st_mode & S_IFDIR ) ? 1 : 0;
 }
 
-// saves all the names of the files in a given path
-vector<string> getFiles(string path){
+// saves all the names of the files in a given path that are of a specified extentions
+vector<string> Dataset::getFiles(string path, vector<string> extentions){
 
-        //cout << "adding " + path << endl;
-        // this is it for now
         vector<string> files;
 
         for(const auto & entry : fs::directory_iterator(path)){
                 string it = entry.path();
 
-                //cout << it << endl;
-                files.push_back(it);
+		for (string ext : extentions){
+		
+			string name = Dataset::splitPath(it);
+
+			//cout << name.substr(name.length() - 3) << " and " << ext << endl;
+
+			if(name.substr(name.length() - 3).compare(ext) == 0){	
+
+                		files.push_back(it);
+			}else if(ext.compare("none") == 0){
+			
+				files.push_back(it);
+
+			}
+		}
+
         }
 
         return files;
 
 
-}
-
+} 
 
 // returns the list of all .avi or .mp4 files to be run my the augmentation algorithm.
-vector<string> getInputs(){
+vector<string> Dataset::getLabels(){
 
-        vector<string> inputs;
+	cout << "Getting the Labels " << endl;
 
-        if (dirExists(inputPath.c_str())){
-                inputs = getFiles(inputPath);
+        vector<string> labels;
+
+	vector<string> files;
+
+	vector<string> ext;
+	ext.push_back("none");
+
+        if (dirExists(Dataset::inputPath.c_str())){
+                files = getFiles(Dataset::inputPath, ext);
         }else{
-                cout << "> Label: error could not find path " << inputPath << endl;
-                throw "> Error: Invalid input path.";
+                cout << "> Label: error could not find label path " << Dataset::inputPath << endl;
+                string message = "> Error: Invalid input path.";
+		throw message;
         }
 
-        return inputs;
+	for (string path : files){
+	
+	
+		if (path.length() > 5 && path.substr(path.length() - 4).compare("yeet") == 0){
+		
+			cout << "Dataset: Ignoring the yeet file" << endl;
+		}else{
+		
+			labels.push_back(path);
+			cout << "Dataset: Added label " << path << endl;
+		
+		}
+	}
+
+	int size = labels.size();
+
+	if (size == 0){
+
+		string message = "no valid Labels at ";
+		string error = message + Dataset::inputPath;
+		throw error; 
+	}else{
+	
+		cout << "Found " << size << " Labels"  << endl;
+	}
+
+        return labels;
 }
 
 // returns a shuffled list of all the .jpg files to be used as a background.
-vector<string> getBackgrounds(){
+vector<string> Dataset::getBackgrounds(){
 
         vector<string> backgrounds;
+	vector<string> ext;
+	ext.push_back("png");
+	ext.push_back("jpg");
 
-        if (dirExists(backgroundPath.c_str())){
-                backgrounds = getFiles(backgroundPath);
+	cout << "Loading the background from " << Dataset::backgroundPath << endl;
+
+        if (dirExists(Dataset::backgroundPath.c_str())){
+                backgrounds = getFiles(Dataset::backgroundPath, ext);
         }else{
-                cout << "> Label: error could not find path " << backgroundPath << endl;
-                throw "> Error: Invalid background image path.";
+                cout << "> Label: error could not find background path " << Dataset::backgroundPath << endl;
+                string message = "> Error: Invalid background image path.";
+		throw message;
         }
+
+	int size = backgrounds.size();
+
+	if (size == 0){
+
+		string message = "no valid input files at ";
+		string error = message + Dataset::backgroundPath;
+		throw error; 
+	}else{
+	
+		cout << "Found " << size << " valid files at: " << Dataset::backgroundPath << endl;
+	}
 
         // shuffle the background images around 
         auto rng = default_random_engine {};
@@ -408,10 +285,40 @@ vector<string> getBackgrounds(){
 
 }
 
+
+//split a path and returns the last element
+string Dataset::splitPath(string line){
+
+	std::string delimiter = "/";
+
+        vector<string> splitLine;
+        size_t pos = 0;
+        std::string token;
+        while ((pos = line.find(delimiter)) != std::string::npos) {
+                token = line.substr(0, pos);
+                // check if empty char
+                if (token.compare(" ") != 0 && token.compare("") != 0){
+                        splitLine.push_back(token);
+                }
+                line.erase(0, pos + delimiter.length());
+        }
+        if (token.compare(" ") != 0){
+                splitLine.push_back(line);
+        }
+
+	string name = splitLine.back();
+        return name;
+
+}
+
+
 // parses the .yeet file into a vector of string vectors
-vector<vector<string>> parseFile(string pathToYeet)
+vector<vector<string>> Dataset::parseFile(string path)
 {
 
+	string fileName = "dataset_config.yeet";
+	string pathToYeet = path + fileName;
+	cout << "parsing file " << pathToYeet << endl;
         string line;
         ifstream myfile (pathToYeet);
         vector<vector<string>> parsedFile;
@@ -419,7 +326,7 @@ vector<vector<string>> parseFile(string pathToYeet)
                 while ( getline (myfile,line) ){
                         //cout << line << '\n';
 
-                        std::string delimiter = " ";
+                        std::string delimiter = "=";
 
                         vector<string> splitLine;
                         size_t pos = 0;
@@ -440,7 +347,9 @@ vector<vector<string>> parseFile(string pathToYeet)
          myfile.close();
  
         }
-        else{ cout << "Unable to open file";
+        else{ 
+		string message =  "no dataset_config.yeet file found";
+		throw message;
 
         }
 
@@ -448,7 +357,7 @@ vector<vector<string>> parseFile(string pathToYeet)
 }
 
 // goes through each line and reads the config
-void setSettings (vector<vector<string>> file){
+void Dataset::setSettings (vector<vector<string>> file){
 
         for(vector<string> line : file){
 
@@ -457,47 +366,85 @@ void setSettings (vector<vector<string>> file){
 
                 if(word.compare("dataset_name") == 0){
 
-                        datasetName = line.at(2);
+                        Dataset::datasetName = line.at(1);
 
-                }else if(word.compare("label_name") == 0){
-
-                        labelName = line.at(2);
                 }
                 else if(word.compare("output_path") == 0){
 
-                        outputPath = line.at(2);
+                        Dataset::outputPath = line.at(1);
                 }
                 else if(word.compare("background_path") == 0){
 
-                        backgroundPath = line.at(2);
+                        Dataset::backgroundPath = line.at(1);
                 }
                 else if(word.compare("max_objects_per_canvas") == 0){
+                        Dataset::max_objects = stoi(line.at(1));
+			if (Dataset::max_objects > 10){
+			
+				string message = "cannot add more than 10 object per canvas you noodle";
+				throw message;
+			}
 
-                        objects = stoi(line.at(2));
                 }
                 else if(word.compare("canvases_per_frame") == 0){
+                        Dataset::canvas_per_frame = stoi(line.at(1));
+			if (Dataset::canvas_per_frame > 30){
+			
+				string message = "cannot create more than 30 canvases per frame";
+				throw message;
 
-                        mult = stoi(line.at(2));
+			}
+
                 }
                 else if(word.compare("canvas_blurr") == 0){
 
-                        can_blurrProb = stoi(line.at(2));
+                        Dataset::can_blurrProb = stoi(line.at(1));
+			if (Dataset::can_blurrProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+
+			}
+
                 }
                 else if(word.compare("object_saturation") == 0){
 
-                        obj_changeSatProb = stoi(line.at(2));
+                        Dataset::obj_changeSatProb = stoi(line.at(1));
+			if (Dataset::obj_changeSatProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+
+			}
+
                 }
                 else if(word.compare("canvas_lower_resolution") == 0){
 
-                        can_lowerRes = stoi(line.at(2));
+                        Dataset::can_lowerRes = stoi(line.at(1));
+			if (Dataset::can_lowerRes > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+			}
                 }
                 else if(word.compare("canvas_change_brightness") == 0){
 
-                        can_changeBrightProb = stoi(line.at(2));
+                        Dataset::can_changeBrightProb = stoi(line.at(1));
+			if (Dataset::can_changeBrightProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+			}
                 }
                 else if(word.compare("object_affine_transform") == 0){
 
-                        obj_affineProb = stoi(line.at(2));
+                        Dataset::obj_affineProb = stoi(line.at(1));
+			if (Dataset::obj_affineProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+			}
+
                 }
                 else if(word.compare("//") == 0){
 
@@ -507,48 +454,36 @@ void setSettings (vector<vector<string>> file){
 
         }
 	
-	if (outputPath.compare("default")){
+	if (Dataset::outputPath.compare("default") == 0){
+
+		string add_path = "/data/outputs/";
+
+		string current_path = fs::current_path();
 	
-		outputPath = fs::current_path() + "/data/output/" + datasetName + "/";
+		Dataset::outputPath = current_path + add_path + Dataset::datasetName + "/";
 	}
 
 	// three folders to be created
-        masks = outputPath + "masks/";
-        imgs = outputPath + "imgs/";
-        xml = outputPath + "xml/";
+        Dataset::masks = Dataset::outputPath + "masks/";
+        Dataset::imgs = Dataset::outputPath + "imgs/";
+        Dataset::xml = Dataset::outputPath + "xml/";
 
 	// prints out all the settings allowing the user to check that everything is ok
-        cout << "\n========================= Label Configuration ===================================" << endl;
-        cout << "> readFile: path to background:                             " << pathToBackground << endl;
-        cout << "> readFile: output path:                                    " << output << endl;
-        cout << "> readFile: dataset name:                                   " << dataset << endl;
-        cout << "> readFile: label name:                                     " << label << endl;
-        cout << "> readFile: number of canvases created per video frame:     " << mult << endl;
-        cout << "> readFile: max number of objects to be put in each canvas: " << objects << endl;
+        cout << "\n========================= Dataset Configuration ==================================" << endl;
+        cout << "> readFile: path to background:                             " << Dataset::backgroundPath << endl;
+        cout << "> readFile: output path:                                    " << Dataset::outputPath << endl;
+        cout << "> readFile: dataset name:                                   " << Dataset::datasetName  << endl;
+        cout << "> readFile: number of canvases created per video frame:     " << Dataset::canvas_per_frame << endl;
+        cout << "> readFile: max number of objects to be put in each canvas: " << Dataset::max_objects << endl;
         cout << "\n========================= Canvas Modification ===================================" << endl;
-        cout << "> readFile: chances of blurring canvas:                     " << can_blurrProb << "%" << endl;
-        cout << "> readFile: chances of lowering the canvas resolution:      " << can_lowerRes << "%" << endl;
-        cout << "> readFile: chances of changing the canvas brightness:      " << can_changeBrightProb << "%" << endl;
+        cout << "> readFile: chances of blurring canvas:                     " << Dataset::can_blurrProb << "%" << endl;
+        cout << "> readFile: chances of lowering the canvas resolution:      " << Dataset::can_lowerRes << "%" << endl;
+        cout << "> readFile: chances of changing the canvas brightness:      " << Dataset::can_changeBrightProb << "%" << endl;
         cout << "\n========================= Object Modification ===================================" << endl;
-        cout << "> readFile: chances of changing object color saturation:    " << obj_changeSatProb << "%" << endl;
-        cout << "> readFile: chances of changing object affine transform:    " << obj_affineProb << "%" << endl;
+        cout << "> readFile: chances of changing object color saturation:    " << Dataset::obj_changeSatProb << "%" << endl;
+        cout << "> readFile: chances of changing object affine transform:    " << Dataset::obj_affineProb << "%" << endl;
 
 }
 
 
 
-
-
-}
-
-// load config file specific to it
-//
-// load all backgrounds
-//
-// iterate over each video files
-//
-// for each frame, segment it 
-//
-// create a x canvases
-//
-// save them

@@ -21,7 +21,7 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 	for (string label_path : Dataset::labels){
 
 	
-		string label = Dataset::splitPath(label_path).back();
+		string label = Dataset::splitPath(label_path);
 
 		cout << "============== creating a mock Label onject =========" << endl;
 		cout << "Label " << label << endl;
@@ -36,7 +36,8 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 		cout << "Dataset::canvas_per_frame " << Dataset::canvas_per_frame << endl;
 		cout << "Dataset::max_objects " << Dataset::max_objects << endl;
 		cout << "===== mock video files to be augmented ======" << endl;
-		vector<string> videoFiles = getFiles(label_path);
+
+		vector<string> videoFiles = Dataset::getLabelFiles(label_path);
 		for(string video : videoFiles){
 		
 			cout << video << endl;
@@ -44,7 +45,34 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 
 	}
 
+}
 
+// checks and returns all the files in a path
+vector<string> Dataset::getLabelFiles(string path){
+
+	vector<string> ext;
+	string avi = "avi";
+	string mp4 = "mp4";
+	ext.push_back(avi.c_str());
+	ext.push_back(mp4.c_str());
+
+	vector<string> videoFiles;
+       
+	videoFiles = Dataset::getFiles(path, ext);
+
+	int size = videoFiles.size();
+
+	if (size == 0){
+
+		string message = "no valid input files at ";
+		string error = message + path;
+		throw error; 
+	}else{
+	
+		cout << "Found " << size << " valid files at: " << path << endl;
+	}
+
+	return videoFiles;
 
 }
 
@@ -62,7 +90,8 @@ bool Dataset::createOutputDirs(){
                 }else{
 
                         cout << "> Label: could not create " << Dataset::outputPath;
-                        throw "Error: Could not create output path.";
+			string message = "Error: Could not create output path.";
+                        throw message;
                 }
 
         }
@@ -76,7 +105,8 @@ bool Dataset::createOutputDirs(){
                 }else{
 
                         cout << "> Label: could not create " << Dataset::masks << endl;
-                        throw "Error: Could not create Dataset::masks path.";
+			string message = "Error: Could not create masks path.";
+                        throw message;
                 }
 
         }
@@ -90,7 +120,9 @@ bool Dataset::createOutputDirs(){
                 }else{
 
                         cout << "> Label: could not create " << Dataset::imgs << endl;
-                        throw "Error: Could not create Dataset::imgs path.";
+			string message = "Error: Could not create imgs path.";
+                        throw message;
+
                 }
 
         }
@@ -104,7 +136,8 @@ bool Dataset::createOutputDirs(){
                 }else{
 
                         cout << "> Label: could not create " << Dataset::xml << endl;
-                        throw "Error: Could not create Dataset::xml path.";
+			string message = "Error: Could not create xml path.";
+                        throw message;
                 }
 
         }
@@ -133,15 +166,30 @@ int Dataset::dirExists(const char* const path)
     return ( info.st_mode & S_IFDIR ) ? 1 : 0;
 }
 
-// saves all the names of the files in a given path
-vector<string> Dataset::getFiles(string path){
+// saves all the names of the files in a given path that are of a specified extentions
+vector<string> Dataset::getFiles(string path, vector<string> extentions){
 
         vector<string> files;
 
         for(const auto & entry : fs::directory_iterator(path)){
                 string it = entry.path();
 
-                files.push_back(it);
+		for (string ext : extentions){
+		
+			string name = Dataset::splitPath(it);
+
+			//cout << name.substr(name.length() - 3) << " and " << ext << endl;
+
+			if(name.substr(name.length() - 3).compare(ext) == 0){	
+
+                		files.push_back(it);
+			}else if(ext.compare("none") == 0){
+			
+				files.push_back(it);
+
+			}
+		}
+
         }
 
         return files;
@@ -158,11 +206,15 @@ vector<string> Dataset::getLabels(){
 
 	vector<string> files;
 
+	vector<string> ext;
+	ext.push_back("none");
+
         if (dirExists(Dataset::inputPath.c_str())){
-                files = getFiles(Dataset::inputPath);
+                files = getFiles(Dataset::inputPath, ext);
         }else{
                 cout << "> Label: error could not find label path " << Dataset::inputPath << endl;
-                throw "> Error: Invalid input path.";
+                string message = "> Error: Invalid input path.";
+		throw message;
         }
 
 	for (string path : files){
@@ -179,6 +231,18 @@ vector<string> Dataset::getLabels(){
 		}
 	}
 
+	int size = labels.size();
+
+	if (size == 0){
+
+		string message = "no valid Labels at ";
+		string error = message + Dataset::inputPath;
+		throw error; 
+	}else{
+	
+		cout << "Found " << size << " Labels"  << endl;
+	}
+
         return labels;
 }
 
@@ -186,15 +250,31 @@ vector<string> Dataset::getLabels(){
 vector<string> Dataset::getBackgrounds(){
 
         vector<string> backgrounds;
+	vector<string> ext;
+	ext.push_back("png");
+	ext.push_back("jpg");
 
 	cout << "Loading the background from " << Dataset::backgroundPath << endl;
 
         if (dirExists(Dataset::backgroundPath.c_str())){
-                backgrounds = getFiles(Dataset::backgroundPath);
+                backgrounds = getFiles(Dataset::backgroundPath, ext);
         }else{
                 cout << "> Label: error could not find background path " << Dataset::backgroundPath << endl;
-                throw "> Error: Invalid background image path.";
+                string message = "> Error: Invalid background image path.";
+		throw message;
         }
+
+	int size = backgrounds.size();
+
+	if (size == 0){
+
+		string message = "no valid input files at ";
+		string error = message + Dataset::backgroundPath;
+		throw error; 
+	}else{
+	
+		cout << "Found " << size << " valid files at: " << Dataset::backgroundPath << endl;
+	}
 
         // shuffle the background images around 
         auto rng = default_random_engine {};
@@ -206,9 +286,8 @@ vector<string> Dataset::getBackgrounds(){
 }
 
 
-//split single line
-
-vector<string> Dataset::splitPath(string line){
+//split a path and returns the last element
+string Dataset::splitPath(string line){
 
 	std::string delimiter = "/";
 
@@ -226,7 +305,9 @@ vector<string> Dataset::splitPath(string line){
         if (token.compare(" ") != 0){
                 splitLine.push_back(line);
         }
-        return splitLine;
+
+	string name = splitLine.back();
+        return name;
 
 }
 
@@ -266,7 +347,9 @@ vector<vector<string>> Dataset::parseFile(string path)
          myfile.close();
  
         }
-        else{ cout << "Unable to open file";
+        else{ 
+		string message =  "no dataset_config.yeet file found";
+		throw message;
 
         }
 
@@ -295,32 +378,73 @@ void Dataset::setSettings (vector<vector<string>> file){
                         Dataset::backgroundPath = line.at(1);
                 }
                 else if(word.compare("max_objects_per_canvas") == 0){
+                        Dataset::max_objects = stoi(line.at(1));
+			if (Dataset::max_objects > 10){
+			
+				string message = "cannot add more than 10 object per canvas you noodle";
+				throw message;
+			}
 
-			Dataset::max_objects = stoi(line.at(1));
                 }
                 else if(word.compare("canvases_per_frame") == 0){
+                        Dataset::canvas_per_frame = stoi(line.at(1));
+			if (Dataset::canvas_per_frame > 30){
+			
+				string message = "cannot create more than 30 canvases per frame";
+				throw message;
 
-			Dataset::canvas_per_frame = stoi(line.at(1));
+			}
+
                 }
                 else if(word.compare("canvas_blurr") == 0){
 
                         Dataset::can_blurrProb = stoi(line.at(1));
+			if (Dataset::can_blurrProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+
+			}
+
                 }
                 else if(word.compare("object_saturation") == 0){
 
                         Dataset::obj_changeSatProb = stoi(line.at(1));
+			if (Dataset::obj_changeSatProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+
+			}
+
                 }
                 else if(word.compare("canvas_lower_resolution") == 0){
 
                         Dataset::can_lowerRes = stoi(line.at(1));
+			if (Dataset::can_lowerRes > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+			}
                 }
                 else if(word.compare("canvas_change_brightness") == 0){
 
                         Dataset::can_changeBrightProb = stoi(line.at(1));
+			if (Dataset::can_changeBrightProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+			}
                 }
                 else if(word.compare("object_affine_transform") == 0){
 
                         Dataset::obj_affineProb = stoi(line.at(1));
+			if (Dataset::obj_affineProb > 100){
+			
+				string message = "value above 100 in config";
+				throw message;
+			}
+
                 }
                 else if(word.compare("//") == 0){
 
