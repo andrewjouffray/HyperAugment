@@ -11,7 +11,7 @@ Step1: Find the label directory with the given path
 Step2: Find and create the Output directories
 Step3: Read the config.yaml and set all the configuration options
 Step4: Generate the Canvases (using multithreading)
-Step5: Save the Canvases.jpg Masks.jpg and Roi.xml files
+Step5: Save the Canvases.jpg Masks.jpg and Roi.Label::xml files
 
 sources:
 
@@ -21,60 +21,17 @@ sources:
 
 */
 
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <omp.h>
-#include <fstream>
-#include <string>
-#include <filesystem>
-#include <chrono>
-#include "./inculde/randomFunc.h"
-#include "./include/Canvas.h"
-#include <sys/stat.h>
-#include "./vendors/tinyxml/tinyxml.h"
-#include "./vendors/tinyxml/tinystr.h"
-
-
-namespace fs = std::filesystem;
-using namespace std;
-
-class Label{
-
-public:
-
-        int obj_affineProb;
-        int obj_changeSatProb;
-        int can_changeBrightProb;
-        int can_blurrProb;
-        int can_lowerRes;
-        int canvas_per_frame;
-        int max_objects;
-
-        // paths and names of folders
-        string labelName;
-        string outputPath;
-        string datasetName;
-	String inputPath;
-	String backgroundPath;
-	vector<String>*	 backgrounds;
-	vector<String>* inputs;
-        string masks;
-        string imgs;
-        string xml;
-
-	bool debug;
-
-Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, debugArg){
+Label::Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, debugArg){
 
 	// pointer to the background array;
-	backgrounds = background;
+	Label::backgrounds = background;
 
 	// pointer to the array of videofiles
-	inputs = input;
+	Label::inputs = input;
 
-	labelName = label;
-	outputPath = output;
-	datasetName = dataset;
+	Label::labelName = label;
+	Label::outputPath = output;
+	Label::datasetName = dataset;
 	obj_affineProb = affine;
 	obj_changeSatProb = saturaton;
 	can_changeBrightProb = bright;
@@ -83,18 +40,18 @@ Label(string label, string dataset, string output, int affine, int saturation, i
 	canvas_per_frame = canvasQt;
 	max_objects = max_obj;
 
-	masks = outputPath + "masks/";
-	img = outputPath + "imgs/";
-	xml = outputPath + "xml/";
+	Label::masks = Label::outputPath + "Label::masks/";
+	img = Label::outputPath + "Label::imgs/";
+	Label::xml = Label::outputPath + "Label::xml/";
 	
-	debug = debugArg;
+	Label::debug= debugArg;
 	
 
 
 	// for each input file
-	for(int i = 0; i < inputs->size(); i ++){
+	for(int i = 0; i < Label::inputs->size(); i ++){
 
-		string inFile = inputs->at(i);
+		string inFile = Label::inputs->at(i);
 		cout << inFile << endl;
 
 		cv::VideoCapture cap(inFile);
@@ -121,10 +78,10 @@ Label(string label, string dataset, string output, int affine, int saturation, i
 
                                 	for(int i = 0; i < multiply; i ++){
 
-						cv::Mat background = getRandomBackground();
+						cv::Mat background = Label::getRandomBackground();
 
                                         	// creates and saves a canvas
-                                        	Canvas canvas(frame, background, max_objects, obj_affineProb, obj_changeSatProb ,can_changeBrightProb, can_blurrProb, can_lowerRes, debug, &colors); // <---------------- Update this
+                                        	Canvas canvas(frame, background, max_objects, obj_affineProb, obj_changeSatProb ,can_changeBrightProb, can_blurrProb, can_lowerRes, Label::debug, &colors);
                                         	int64_t  current = timeSinceEpochMillisec();
 
 						string id = this_thread::get_id();
@@ -152,20 +109,20 @@ Label(string label, string dataset, string output, int affine, int saturation, i
 
 }
 
-void saveImg(cv::Mat img, string name){
+void Label::saveImg(cv::Mat img, string name){
 
-	string path = imgs + name + ".jpg";
+	string path = Label::imgs + name + ".jpg";
 	cv::imwrite(path, img);
 }
 
-void saveMask(cv::Mat mask, string name){
+void Label::saveMask(cv::Mat mask, string name){
 
-	string path = masks + name + ".jpg";
+	string path = Label::masks + name + ".jpg";
 	cv::imwrite(path, mask);
 
 }
 
-void saveXML(vector<vector<int>> rois, string name, cv::Mat img){
+void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 
 	// image dimentions 
 	int height = img.rows;
@@ -176,8 +133,8 @@ void saveXML(vector<vector<int>> rois, string name, cv::Mat img){
        	string sWidth = to_string(width);
 	string sChannel = to_string(channels);
 
-	// save path of the image not the xml
-	string fullPath = imgs + name + ".xml";	
+	// save path of the image not the Label::xml
+	string fullPath = Label::imgs + name + ".Label::xml";	
 
 	// image being refered to path
 	string filename = name + ".jpg";
@@ -197,9 +154,9 @@ void saveXML(vector<vector<int>> rois, string name, cv::Mat img){
         TiXmlElement * segmented = new TiXmlElement( "segmented" );
 
 
-        TiXmlText * folderName = new TiXmlText( "xml" );
+        TiXmlText * folderName = new TiXmlText( "Label::xml" );
         TiXmlText * fileNameText = new TiXmlText( filename.c_str() );
-        TiXmlText * databaseName = new TiXmlText( datasetName.c_str() );
+        TiXmlText * databaseName = new TiXmlText( Label::datasetName.c_str() );
         TiXmlText * pathText = new TiXmlText( fullPath.c_str() );
         TiXmlText * widthVal = new TiXmlText( sWidth.c_str() );
         TiXmlText * heightVal = new TiXmlText( sHeight.c_str() );
@@ -245,7 +202,7 @@ void saveXML(vector<vector<int>> rois, string name, cv::Mat img){
                 TiXmlElement * xmax = new TiXmlElement( "xmax" );
                 TiXmlElement * ymax = new TiXmlElement( "ymax" );
 
-                TiXmlText * objectName = new TiXmlText( labelName.c_str() );
+                TiXmlText * objectName = new TiXmlText( Label::labelName.c_str() );
                 TiXmlText * objectPose = new TiXmlText( "Unspecified" );
                 TiXmlText * objectTruncated = new TiXmlText( "0" );
                 TiXmlText * objectDifficult = new TiXmlText( "0" );
@@ -290,17 +247,17 @@ void saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 
         doc.LinkEndChild( decl );
         doc.LinkEndChild( annotation );
-	string savePath = xml + name + ".xml";
+	string savePath = Label::xml + name + ".Label::xml";
         doc.SaveFile( savePath );
 	// need to test this
 
 }
 
-cv::Mat getRandomBackground(){
+cv::Mat Label::getRandomBackground(){
 
-	int rand = randomInt(0, backgrounds->size());
+	int rand = randomInt(0, Label::backgrounds->size());
 
-	string file = backgrounds->at(rand);
+	string file = Label::backgrounds->at(rand);
 
 	cv::Mat image = cv::imread(file);
 
@@ -309,4 +266,4 @@ cv::Mat getRandomBackground(){
 
 
 
-}
+

@@ -20,7 +20,12 @@ public:
 	int maxObjects;
 	int numObjects;
 	int columnWidth;
-	vector<int> modProb; // modification probability
+	int obj_affine;
+	int obj_sat;
+	int brightnessProb;
+	int blurrProb;
+	int lowResProb;
+	vector<int>* maskColor;
 	float aspectRatios [5] = {1.33, 1.66, 1.78, 1.85, 2.39};
 	cv::Mat canvas;
 	cv::Mat mask;
@@ -39,7 +44,7 @@ public:
 
 	void blurr();
 
-	void createMasks(vector<int> mcolors);
+	void createMasks(vector<int>* mcolors);
 
 	vector<cv::Rect> calculateRois();
 			

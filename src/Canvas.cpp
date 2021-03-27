@@ -19,15 +19,17 @@ step6: randomely apply transforamtions: (resolution change, blurr, brightness ch
 
 
 // constructor, params need to be added I think.
-Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> modProbability, bool debug, vector<int> labelColor){
+Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int obj_affineProb, int obj_satProb, int brightness, int blurr, int lowRes , bool debug, vector<int>* labelColor){
 
 	Canvas::debug = debug;
 	Canvas::ooi = ooiArg;
 	Canvas::background = backgroundArg;
 	Canvas::maxObjects = maxOoi;
-
-	// probablity of modifying the Oois not the whole Canvas::canvas			
-	Canvas::modProb = modProbability;
+	Canvas::obj_affine = obj_affineProb;
+	Canvas::obj_sat = obj_satProb;
+	Canvas::brightnessProb = brightness;
+	Canvas::blurrProb = blurr;
+	Canvas::lowResProb = lowRes;
 
 	// used to randomely apply transformations to the Canvas::canvas
 	int canvasModProb = randomInt(1, 100);
@@ -66,15 +68,15 @@ Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, vector<int> mo
 	Canvas::addBackground();
 
 	// transformations
-	if (canvasModProb % 2 == 0){
+	if (canvasModProb <= Canvas::brightnessProb){
 		Canvas::changeBrightness();
 	}
 
-	if (canvasModProb > 75){
+	if (canvasModProb <= Canvas::blurrProb){
 		Canvas::blurr();
 	}
 
-	if (canvasModProb % 5 == 0){
+	if (canvasModProb <= Canvas::lowResProb){
 		Canvas::lowerRes();
 	}
 	
@@ -91,7 +93,7 @@ void Canvas::createCanvas(){
 		int absolutePos = Canvas::columnWidth * i;
 
 		// create an object to put on the Canvas::canvas
-		Ooi objectOfInterest = Ooi(ooi, Canvas::columnWidth, Canvas::height, absolutePos, Canvas::modProb, Canvas::debug );
+		Ooi objectOfInterest = Ooi(ooi, Canvas::columnWidth, Canvas::height, absolutePos, Canvas::obj_affine, Canvas::obj_sat, Canvas::debug );
 		objects.push_back(objectOfInterest);
 
 		// get the position of the object in the image
@@ -173,7 +175,7 @@ void Canvas::blurr(){
 }
 
 // each label in a dataset has a different colored Canvas::mask
-void Canvas::createMasks(vector<int> mcolors){
+void Canvas::createMasks(vector<int>* mcolors){
 
 	// FUTURE UPDATE: get the thresholded value once and not in each method
 
@@ -190,7 +192,7 @@ void Canvas::createMasks(vector<int> mcolors){
 	Canvas::blackMask = mask.clone();
 
         inRange(Canvas::mask, cv::Scalar(255, 255, 255), cv::Scalar(255, 255, 255), grayMask);
-        Canvas::mask.setTo(cv::Scalar(mcolors.at(0), mcolors.at(1), mcolors.at(2)), grayMask);
+        Canvas::mask.setTo(cv::Scalar(mcolors->at(0), mcolors->at(1), mcolors->at(2)), grayMask);
 
 }
 
