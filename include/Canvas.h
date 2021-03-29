@@ -3,13 +3,12 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <omp.h>
 #include <fstream>
 #include <string>
 #include <filesystem>
 #include <chrono>
-#include "Ooi.h"
-
+#include "./Ooi.h"
+#include "./randomFunc.h"
 using namespace std;
 
 class Canvas{

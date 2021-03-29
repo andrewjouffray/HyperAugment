@@ -17,7 +17,7 @@ note: everytime I mention 'object' in the comments, I'm referring to the object 
 
 */
 
-#include "Ooi.h"
+#include "../include/Ooi.h"
 
 // important note: I use namespace std in the header file, this might create namespace conflicts in some libraries.
 

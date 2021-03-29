@@ -15,7 +15,7 @@ step5: replace the bacl pixels with the provided backgorund image
 step6: randomely apply transforamtions: (resolution change, blurr, brightness change)
 
 */
-#include "Canvas.h"
+#include "../include/Canvas.h"
 
 
 // constructor, params need to be added I think.

@@ -20,8 +20,9 @@ sources:
 
 
 */
+#include "../include/Label.h"
 
-Label::Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, debugArg){
+Label::Label(string label, string dataset, string output, int affine, int saturation, int bright, int blurr, int lowRes, int canvasQt, int max_obj, vector<string>* input, vector<string>* background, bool debugArg){
 
 	// pointer to the background array;
 	Label::backgrounds = background;
@@ -32,17 +33,17 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 	Label::labelName = label;
 	Label::outputPath = output;
 	Label::datasetName = dataset;
-	obj_affineProb = affine;
-	obj_changeSatProb = saturaton;
-	can_changeBrightProb = bright;
-	can_blurrProb = blurr;
-	can_lowerRes = lowRes;
-	canvas_per_frame = canvasQt;
-	max_objects = max_obj;
+	Label::obj_affineProb = affine;
+	Label::obj_changeSatProb = saturation;
+	Label::can_changeBrightProb = bright;
+	Label::can_blurrProb = blurr;
+	Label::can_lowerRes = lowRes;
+	Label::canvas_per_frame = canvasQt;
+	Label::max_objects = max_obj;
 
-	Label::masks = Label::outputPath + "Label::masks/";
-	img = Label::outputPath + "Label::imgs/";
-	Label::xml = Label::outputPath + "Label::xml/";
+	Label::masks = Label::outputPath + "masks/";
+	Label::imgs = Label::outputPath + "imgs/";
+	Label::xml = Label::outputPath + "xml/";
 	
 	Label::debug= debugArg;
 	
@@ -76,21 +77,24 @@ Label::Label(string label, string dataset, string output, int affine, int satura
                         	#pragma omp task
                         	{
 
-                                	for(int i = 0; i < multiply; i ++){
+                                	for(int i = 0; i < Label::canvas_per_frame; i ++){
 
 						cv::Mat background = Label::getRandomBackground();
 
                                         	// creates and saves a canvas
-                                        	Canvas canvas(frame, background, max_objects, obj_affineProb, obj_changeSatProb ,can_changeBrightProb, can_blurrProb, can_lowerRes, Label::debug, &colors);
+                                        	Canvas canvas(frame, background, Label::max_objects, Label::obj_affineProb, Label::obj_changeSatProb ,Label::can_changeBrightProb, Label::can_blurrProb, Label::can_lowerRes, Label::debug, &colors);
                                         	int64_t  current = timeSinceEpochMillisec();
 
-						string id = this_thread::get_id();
+						std::stringstream ss_id;
+						ss_id << std::this_thread::get_id();
+						//string id = this_thread::get_id();
 
-                                        	string name = to_string(current) + "hpa" + id;
+                                        	string name = to_string(current) + "hpa" + ss_id.str();
 
-                                        	saveImg(canvas.getCanvas(), name);
+						cv::Mat img = canvas.getCanvas();
+                                        	saveImg(img, name);
 						saveMask(canvas.getMask(), name);
-						saveXML(canvas.getRois(), name);
+						saveXML(canvas.getRois(), name, img);
                                 	}
 
 
@@ -125,19 +129,19 @@ void Label::saveMask(cv::Mat mask, string name){
 void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 
 	// image dimentions 
-	int height = img.rows;
-	int width = img.cols;
-	int channels = img.channels();
+	int iheight = img.rows;
+	int iwidth = img.cols;
+	int ichannels = img.channels();
 
-	string sHeight = to_string(height);
-       	string sWidth = to_string(width);
-	string sChannel = to_string(channels);
+	string sHeight = to_string(iheight);
+       	string sWidth = to_string(iwidth);
+	string sChannel = to_string(ichannels);
 
 	// save path of the image not the Label::xml
-	string fullPath = Label::imgs + name + ".Label::xml";	
+	string fullPath = Label::imgs + name + ".xml";	
 
 	// image being refered to path
-	string filename = name + ".jpg";
+	string img_filename = name + ".jpg";
 
 	TiXmlDocument doc;
         TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
@@ -154,8 +158,8 @@ void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
         TiXmlElement * segmented = new TiXmlElement( "segmented" );
 
 
-        TiXmlText * folderName = new TiXmlText( "Label::xml" );
-        TiXmlText * fileNameText = new TiXmlText( filename.c_str() );
+        TiXmlText * folderName = new TiXmlText( "xml" );
+        TiXmlText * fileNameText = new TiXmlText( img_filename.c_str() );
         TiXmlText * databaseName = new TiXmlText( Label::datasetName.c_str() );
         TiXmlText * pathText = new TiXmlText( fullPath.c_str() );
         TiXmlText * widthVal = new TiXmlText( sWidth.c_str() );
@@ -247,8 +251,8 @@ void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 
         doc.LinkEndChild( decl );
         doc.LinkEndChild( annotation );
-	string savePath = Label::xml + name + ".Label::xml";
-        doc.SaveFile( savePath );
+	string savePath = Label::xml + name + ".xml";
+        doc.SaveFile( savePath.c_str() );
 	// need to test this
 
 }
@@ -264,6 +268,10 @@ cv::Mat Label::getRandomBackground(){
 	return image;
 }
 
+uint64_t Label::timeSinceEpochMillisec(){
+        using namespace std::chrono;
+        return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 
 

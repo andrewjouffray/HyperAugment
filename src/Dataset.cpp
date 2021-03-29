@@ -21,10 +21,10 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 	for (string label_path : Dataset::labels){
 
 	
-		string label = Dataset::splitPath(label_path);
+		string labelName = Dataset::splitPath(label_path);
 
 		cout << "============== creating a mock Label onject =========" << endl;
-		cout << "Label " << label << endl;
+		cout << "Label " << labelName << endl;
 		cout << "Dataset " << Dataset::datasetName << endl;
 		cout << "Input path " << label_path << endl;
 		cout << "Output path " << Dataset::outputPath << endl;
@@ -44,6 +44,8 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 		
 			cout << video << endl;
 		}
+
+		Label labelObject = Label(labelName, Dataset::datasetName, Dataset::outputPath, Dataset::obj_affineProb , Dataset::obj_changeSatProb, Dataset::can_changeBrightProb, Dataset::can_blurrProb, Dataset::can_lowerRes, Dataset::canvas_per_frame, Dataset::canvas_per_frame, &videoFiles, &backgrounds, false);
 
 	}
 

@@ -8,10 +8,11 @@
 #include <filesystem>
 #include <chrono>
 #include <sys/stat.h>
-#include "../libs/tinyxml/tinyxml.h"
-#include "../libs/tinyxml/tinystr.h"
+#include "../vendors/tinyxml/tinyxml.h"
+#include "../vendors/tinyxml/tinystr.h"
 #include <algorithm>
 #include <random>
+#include "./Label.h"
 
 namespace fs = std::filesystem;
 using namespace std;
