@@ -21,6 +21,10 @@ step6: randomely apply transforamtions: (resolution change, blurr, brightness ch
 // constructor, params need to be added I think.
 Canvas::Canvas(cv::Mat ooiArg, cv::Mat backgroundArg, int maxOoi, int obj_affineProb, int obj_satProb, int brightness, int blurr, int lowRes , bool debug, vector<int>* labelColor){
 
+	if(debug){
+		cout << "constructing Canvas" << endl;
+	}
+
 	Canvas::debug = debug;
 	Canvas::ooi = ooiArg;
 	Canvas::background = backgroundArg;

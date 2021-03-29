@@ -54,8 +54,11 @@ int main(int argc, char** argv){
 			}catch(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >& e){
 			
 				cout << e << endl;		
-			}
+			}catch(std::out_of_range& e){
 
+				cout << e.what() << endl;
+				return -1;
+			}
 			return 0;
 		
 		}else if(command.compare("-init") == 0){

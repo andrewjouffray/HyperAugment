@@ -23,7 +23,7 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 	
 		string labelName = Dataset::splitPath(label_path);
 
-		cout << "============== creating a mock Label onject =========" << endl;
+		cout << "============== creating Label object =========" << endl;
 		cout << "Label " << labelName << endl;
 		cout << "Dataset " << Dataset::datasetName << endl;
 		cout << "Input path " << label_path << endl;
@@ -35,15 +35,11 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 		cout << "can_lowerRes " << Dataset::can_lowerRes << endl;
 		cout << "canvas_per_frame " << Dataset::canvas_per_frame << endl;
 		cout << "max_objects " << Dataset::max_objects << endl;
-		cout << "===== mock video files to be augmented ======" << endl;
+		cout << "===== video files to be augmented ======" << endl;
 
-		// DO NOT FORGET DEBUG
 
 		vector<string> videoFiles = Dataset::getLabelFiles(label_path);
-		for(string video : videoFiles){
-		
-			cout << video << endl;
-		}
+		cout << videoFiles.size() << endl;
 
 		Label labelObject = Label(labelName, Dataset::datasetName, Dataset::outputPath, Dataset::obj_affineProb , Dataset::obj_changeSatProb, Dataset::can_changeBrightProb, Dataset::can_blurrProb, Dataset::can_lowerRes, Dataset::canvas_per_frame, Dataset::canvas_per_frame, &videoFiles, &backgrounds, false);
 

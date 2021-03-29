@@ -13,11 +13,6 @@ Step3: Read the config.yaml and set all the configuration options
 Step4: Generate the Canvases (using multithreading)
 Step5: Save the Canvases.jpg Masks.jpg and Roi.Label::xml files
 
-sources:
-
-//https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
-
-
 
 */
 #include "../include/Label.h"
@@ -53,7 +48,7 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 	for(int i = 0; i < Label::inputs->size(); i ++){
 
 		string inFile = Label::inputs->at(i);
-		cout << inFile << endl;
+		cout << "Label: Processing file " << inFile << endl;
 
 		cv::VideoCapture cap(inFile);
 
@@ -62,8 +57,12 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 
         	cv::Mat frame;
 
+
+		int64_t  start = timeSinceEpochMillisec();
+
 		#pragma omp parallel    // start the parallel region
 		{
+
                 	#pragma omp single  // let the while loop execute by one thread and generate tasks
                 	while (1){
 
@@ -74,10 +73,17 @@ Label::Label(string label, string dataset, string output, int affine, int satura
 
                         	}
 
+
+				//cout << omp_get_max_threads() << endl;
+
                         	#pragma omp task
                         	{
-
+					int id = omp_get_thread_num();
                                 	for(int i = 0; i < Label::canvas_per_frame; i ++){
+
+						if(Label::debug){ 
+							cout << "giving task to thread "<< to_string(id) << endl;
+						}
 
 						cv::Mat background = Label::getRandomBackground();
 
@@ -85,11 +91,7 @@ Label::Label(string label, string dataset, string output, int affine, int satura
                                         	Canvas canvas(frame, background, Label::max_objects, Label::obj_affineProb, Label::obj_changeSatProb ,Label::can_changeBrightProb, Label::can_blurrProb, Label::can_lowerRes, Label::debug, &colors);
                                         	int64_t  current = timeSinceEpochMillisec();
 
-						std::stringstream ss_id;
-						ss_id << std::this_thread::get_id();
-						//string id = this_thread::get_id();
-
-                                        	string name = to_string(current) + "hpa" + ss_id.str();
+                                        	string name = to_string(current) + "hpa" + to_string(id);
 
 						cv::Mat img = canvas.getCanvas();
                                         	saveImg(img, name);
@@ -106,6 +108,14 @@ Label::Label(string label, string dataset, string output, int affine, int satura
                 // at this point we also wait until all tasks that were created have finished
 
         	} // end of parallel region
+
+
+        uint64_t  end = timeSinceEpochMillisec();
+
+        uint64_t total = end - start;
+
+        cout << end << endl;
+        cout << total << endl;
 
 	}
 
@@ -138,7 +148,7 @@ void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 	string sChannel = to_string(ichannels);
 
 	// save path of the image not the Label::xml
-	string fullPath = Label::imgs + name + ".xml";	
+	string fullPath = Label::imgs + name + ".jpg";	
 
 	// image being refered to path
 	string img_filename = name + ".jpg";
@@ -259,7 +269,7 @@ void Label::saveXML(vector<vector<int>> rois, string name, cv::Mat img){
 
 cv::Mat Label::getRandomBackground(){
 
-	int rand = randomInt(0, Label::backgrounds->size());
+	int rand = randomInt(0, Label::backgrounds->size() -1);
 
 	string file = Label::backgrounds->at(rand);
 
