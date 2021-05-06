@@ -14,7 +14,7 @@ Hyper augment is meant to be used my machines not by humans, the idea is that if
 
 HyperAugment follows this basic diagram:
 
-![basic diagram](./docs/images/augment-flow.jpg)
+![basic diagram](./docs/images/augment-flow.png)
 
 
 
