@@ -31,25 +31,25 @@ HyperAugment follows this basic diagram:
 
 - clone the repo: `git@github.com:andrewjouffray/HyperAugment.git`
 - Download and install OpenCV for c++
-- install c++ 17
+- install C++ 17
 - install CMake
 - install make 
 - in the repo directory, create a build directory `mkdir build`
 - `cd build`
-- 'cmake ../'
-- 'make'
+- `cmake ../`
+- `make`
 
 The output file will be `hyper_a`
 
 ### Organizing your data 
 
-1- The first important step is to have your input data split into each label that you want to train your model to recognize.
-2- Then you want to have all the input data images be compiled as .avi video files.
-3- Put the compiled input videos into directories that match the label (put a video with cars in it, into a directory named "cars")
-4- You need a large amount of background images saved as .jpg files in a directory of your choice
-5- Make a working directory and place your input directories in a "input" sub directory, create an output sub directory as well
+- The first important step is to have your input data split into each label that you want to train your model to recognize.
+- Then you want to have all the input data images be compiled as .avi video files.
+- Put the compiled input videos into directories that match the label (put a video with cars in it, into a directory named "cars")
+- You need a large amount of background images saved as .jpg files in a directory of your choice
+- Make a working directory and place your input directories in a "input" sub directory, create an output sub directory as well
 
-This is what the working directoy should look like after all these steps
+This is what the working directoy should look like after all these steps:
 
 ```
 
@@ -74,7 +74,7 @@ __<datasetName>/
 |__outputs/
 
 ```
-I usually have about 20,000 random images in my background directory, usually video rames from random youtube videos.
+I usually have about 20,000 random images in my background directory, usually video frames from random youtube videos.
 
 **Make sure the background images do have the object you want to recognize in them. No cars in the background images of a model trying to learn to recognize cars!**
 
