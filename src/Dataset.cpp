@@ -47,7 +47,7 @@ Dataset::Dataset(string pathToDataset){ // load the config from yeet file
 
 }
 
-// checks and returns all the files in a path
+// gets only the .avi and .mp4 files in a path
 vector<string> Dataset::getLabelFiles(string path){
 
 	vector<string> ext;
